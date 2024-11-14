@@ -1,14 +1,12 @@
-from flask import render_template, redirect, request, url_for, flash, send_file
+from flask import render_template, redirect, request, url_for, flash, send_file, session, current_app
 import config
 from app import app
-import scrypt, os
-from werkzeug.utils import secure_filename
+import scrypt, os, time
+from werkzeug.utils import secure_filename, safe_join
 from app.functions import get_db, encrypt_file, decrypt_file
-
 
 db = get_db()
 users_collection = db['users']
-
 
 @app.route('/')
 def home():
@@ -21,7 +19,6 @@ def register():
         password = request.form.get('password')
         
         salt = os.urandom(16)
-        
         hashed_password = scrypt.hash(password, salt)
         
         users_collection.insert_one({
@@ -30,52 +27,53 @@ def register():
             "salt": salt
         })
         
-        
-        print("User registered with username:", username)
-        
         return redirect(url_for('register'))
     return render_template('register.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
-        # Retrieve the user document from the database
+        
         user = users_collection.find_one({"username": username})
 
         if user:
-            # Retrieve the stored hash and salt from the database
             stored_hash = user['password']
             stored_salt = user['salt']
-
-            # Hash the entered password with the stored salt
             entered_hash = scrypt.hash(password, stored_salt)
 
-            # Compare the hashed entered password with the stored hash
             if entered_hash == stored_hash:
-                print("Login successful!")
-                return redirect(url_for('dashboard'))  # Redirect to the dashboard or homepage
+                session['logged_in'] = True
+                session['username'] = username
+                flash('You have successfully logged in! Redirecting in 3..2..1', 'success')
+                return render_template('login.html', title='Login', delayed_redirect=url_for('dashboard'))
             else:
-                print("Invalid password!")
                 flash("Invalid password", "error")
         else:
-            print("User not found!")
             flash("User not found", "error")
 
     return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    session.pop('username', None)
+    return redirect(url_for('login'))
 
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')  # Placeholder for your dashboard page
-
-
+    if 'username' not in session:
+        flash('You are not logged in', 'warning')
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
+    if 'username' not in session:
+        flash('You are not logged in', 'warning')
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No file part', 'error')
@@ -93,10 +91,8 @@ def upload():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
-            # Encrypt the file
             encrypted_data = encrypt_file(filepath, password)
 
-            # Save or replace the file with encrypted content
             with open(filepath, 'wb') as f:
                 f.write(encrypted_data)
 
@@ -104,8 +100,6 @@ def upload():
             return redirect(url_for('dashboard'))
 
     return render_template('upload.html')
-
-
 
 @app.route('/decrypt', methods=['GET', 'POST'])
 def decrypt():
@@ -122,24 +116,33 @@ def decrypt():
             return redirect(request.url)
 
         if file and password:
-            # Save the uploaded file temporarily
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
             file.save(filepath)
 
             try:
-                # Decrypt the file
                 decrypted_data = decrypt_file(filepath, password)
 
-                # Save the decrypted content to a new file
-                decrypted_filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'decrypted_' + file.filename)
+                decrypted_filename = 'decrypted_' + file.filename
+                decrypted_filepath = os.path.join(app.config['UPLOAD_FOLDER'], decrypted_filename)
                 with open(decrypted_filepath, 'wb') as f:
                     f.write(decrypted_data)
 
                 flash('File decrypted successfully!', 'success')
-                return send_file(decrypted_filepath, as_attachment=True)
+
+                safe_filepath = safe_join(current_app.root_path, app.config['UPLOAD_FOLDER'], decrypted_filename)
+                if os.path.exists(decrypted_filepath):
+                    return send_file(decrypted_filepath, as_attachment=True)
+                else:
+                    flash('Decrypted file could not be found.', 'error')
+                    return redirect(request.url)
+
+                return send_file(safe_filepath, as_attachment=True)
 
             except ValueError as e:
                 flash('Incorrect password or decryption failed.', 'error')
+                return redirect(request.url)
+            except Exception as e:
+                # flash(f'An error occurred: {str(e)}', 'error')
                 return redirect(request.url)
 
     return render_template('decrypt.html')

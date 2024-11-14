@@ -10,6 +10,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
+# Set the secret key for session management
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 
 
