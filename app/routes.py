@@ -4,8 +4,14 @@ from app import app
 import scrypt, os, time
 from werkzeug.utils import secure_filename, safe_join
 from app.functions import get_db, encrypt_file, decrypt_file
+from bson.objectid import ObjectId
+
+# file = request.files['file']
+# FILEPATH = filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
+# file.save(filepath)
 
 db = get_db()
+all_files_collection = db['all_files']
 users_collection = db['users']
 encrypted_files_collection = db['encrypted_files']
 decrypted_files_collection = db['decrytped_files']
@@ -41,11 +47,16 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    
+    if 'username' in session:
+        return render_template('dashboard.html')
+    
     if request.method == 'POST':
         email = request.form.get('email')
         # username = request.form.get('username')
         password = request.form.get('password')
         
+           
         user = users_collection.find_one({"email": email})
 
         if user:
@@ -77,7 +88,21 @@ def dashboard():
     if 'username' not in session:
         flash('You are not logged in', 'warning')
         return redirect(url_for('login'))
-    return render_template('dashboard.html')
+    
+    user = users_collection.find_one({
+        'username': session['username']
+    })
+    user_id = user['_id']
+    
+    encrypted_files = encrypted_files_collection.find({
+        "user_id": user_id
+    })
+    
+    decrypted_files = decrypted_files_collection.find({
+        "user_id": user_id
+    })
+    
+    return render_template('dashboard.html', encrypted_files=encrypted_files, decrypted_files=decrypted_files)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -121,6 +146,13 @@ def upload():
                 'file_name': filename,
                 'user_id': user_id
             })
+            
+            all_files_collection.insert_one({
+                'file_name': filename,
+                'user_id': user_id
+            })
+            
+            
             
             return redirect(url_for('dashboard'))
 
@@ -167,6 +199,11 @@ def decrypt():
                     "file_name": decrypted_filename,
                     "user_id": user_id
                 })
+                
+                all_files_collection.insert_one({
+                    "file_name": decrypted_filename,
+                    "user_id": user_id
+                })
 
                 safe_filepath = safe_join(current_app.root_path, app.config['UPLOAD_FOLDER'], decrypted_filename)
                 if os.path.exists(decrypted_filepath):
@@ -185,3 +222,13 @@ def decrypt():
                 return redirect(request.url)
 
     return render_template('decrypt.html')
+
+@app.route('/download/<file_name>')
+def download(file_name):
+    file_path = os.path.join(os.path.dirname(__file__), '..', 'uploads', file_name)
+    return send_file(file_path, as_attachment=True)
+
+
+@app.route('/delete')
+def delete():
+    pass
