@@ -1,10 +1,11 @@
-from flask import render_template, redirect, request, url_for, flash, send_file, session, current_app
-import config
+from flask import render_template, redirect, request, flash, url_for, send_file, session
 from app import app
+import config
 import scrypt, os, time
-from werkzeug.utils import secure_filename, safe_join
+from werkzeug.utils import secure_filename
 from app.functions import get_db, encrypt_file, decrypt_file
 from bson.objectid import ObjectId
+from datetime import datetime
 
 # file = request.files['file']
 # FILEPATH = filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
@@ -95,15 +96,13 @@ def dashboard():
     })
     user_id = user['_id']
     
-    encrypted_files = encrypted_files_collection.find({
-        "user_id": user_id
-    })
-    
-    decrypted_files = decrypted_files_collection.find({
-        "user_id": user_id
-    })
-    
+    # Fetch data from MongoDB and convert to lists
+    encrypted_files = list(encrypted_files_collection.find({'user_id': user_id}))
+    decrypted_files = list(decrypted_files_collection.find({'user_id': user_id}))
+
+# Pass these lists to the template
     return render_template('dashboard.html', encrypted_files=encrypted_files, decrypted_files=decrypted_files)
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -140,17 +139,18 @@ def upload():
 
             flash('File uploaded and encrypted successfully!', 'success')
             
-            
-            #add file name into new table and associate it with user id from users collection with file id.
-            
+            upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
             encrypted_files_collection.insert_one({
                 'file_name': filename,
-                'user_id': user_id
+                'user_id': user_id,
+                'upload_date': upload_date
             })
             
             all_files_collection.insert_one({
                 'file_name': filename,
-                'user_id': user_id
+                'user_id': user_id,
+                'upload_date': upload_date
             })
             
             
@@ -199,14 +199,18 @@ def decrypt():
                 with open(decrypted_filepath, 'wb') as f:
                     f.write(decrypted_data)
 
+                upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
                 # Insert into collections
                 decrypted_files_collection.insert_one({
                     "file_name": decrypted_filename,
-                    "user_id": user_id
+                    "user_id": user_id,
+                    'upload_date': upload_date
                 })
                 all_files_collection.insert_one({
                     "file_name": decrypted_filename,
-                    "user_id": user_id
+                    "user_id": user_id,
+                    'upload_date': upload_date
                 })
 
                 # Flash a success message and redirect to dashboard
@@ -222,12 +226,10 @@ def decrypt():
 
     return render_template('decrypt.html')
 
-
 @app.route('/download/<file_name>')
 def download(file_name):
     file_path = os.path.join(os.path.dirname(__file__), '..', 'uploads', file_name)
     return send_file(file_path, as_attachment=True)
-
 
 @app.route('/delete/<file_id>', methods=['POST'])
 def delete(file_id):
