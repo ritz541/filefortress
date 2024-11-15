@@ -2,6 +2,7 @@ import os, scrypt
 from pymongo import MongoClient
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad,unpad
+from flask import session
 
 def get_db():
     client = MongoClient('mongodb://localhost:27017/')
@@ -25,7 +26,6 @@ def encrypt_file(filepath, password):
     ciphertext_data = iv + salt + cipher.encrypt(pad(plaintext_data, AES.block_size))
 
     return ciphertext_data
-
 
 
 def decrypt_file(filepath, password):

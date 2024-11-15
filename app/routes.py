@@ -7,7 +7,8 @@ from app.functions import get_db, encrypt_file, decrypt_file
 
 db = get_db()
 users_collection = db['users']
-files_collection = db['files']
+encrypted_files_collection = db['encrypted_files']
+decrypted_files_collection = db['decrytped_files']
 
 @app.route('/')
 def home():
@@ -21,6 +22,7 @@ def register():
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
+        email = request.form.get('email')
         username = request.form.get('username')
         password = request.form.get('password')
         
@@ -28,6 +30,7 @@ def register():
         hashed_password = scrypt.hash(password, salt)
         
         users_collection.insert_one({
+            "email": email,
             "username": username,
             "password": hashed_password,
             "salt": salt
@@ -39,10 +42,11 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
+        email = request.form.get('email')
+        # username = request.form.get('username')
         password = request.form.get('password')
         
-        user = users_collection.find_one({"username": username})
+        user = users_collection.find_one({"email": email})
 
         if user:
             stored_hash = user['password']
@@ -50,6 +54,7 @@ def login():
             entered_hash = scrypt.hash(password, stored_salt)
 
             if entered_hash == stored_hash:
+                username = user['username']
                 session['logged_in'] = True
                 session['username'] = username
                 flash('You have successfully logged in! Redirecting in 3..2..1', 'success')
@@ -112,7 +117,7 @@ def upload():
             
             #add file name into new table and associate it with user id from users collection with file id.
             
-            files_collection.insert_one({
+            encrypted_files_collection.insert_one({
                 'file_name': filename,
                 'user_id': user_id
             })
@@ -126,6 +131,11 @@ def decrypt():
     
     if 'username' not in session:
         return redirect(url_for('login'))
+    
+    user = users_collection.find_one({
+        'username': session['username']
+    })
+    user_id = user['_id']
     
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -152,6 +162,11 @@ def decrypt():
                     f.write(decrypted_data)
 
                 flash('File decrypted successfully!', 'success')
+                
+                decrypted_files_collection.insert_one({
+                    "file_name": decrypted_filename,
+                    "user_id": user_id
+                })
 
                 safe_filepath = safe_join(current_app.root_path, app.config['UPLOAD_FOLDER'], decrypted_filename)
                 if os.path.exists(decrypted_filepath):
@@ -160,7 +175,7 @@ def decrypt():
                     flash('Decrypted file could not be found.', 'error')
                     return redirect(request.url)
 
-                return send_file(safe_filepath, as_attachment=True)
+                # return send_file(safe_filepath, as_attachment=True)
 
             except ValueError as e:
                 flash('Incorrect password or decryption failed.', 'error')
