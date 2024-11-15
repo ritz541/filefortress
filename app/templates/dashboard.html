@@ -95,7 +95,7 @@
                 <td>
                     <a href="{{ url_for('download', file_name=file.file_name) }}" class="btn btn-primary btn-sm">Download</a>
                     <a href="{{ url_for('decrypt', file_name=file.file_name) }}" class="btn btn-secondary btn-sm">Decrypt</a>
-                    <form action="{{ url_for('delete', file_name=file.file_name) }}" method="post" style="display:inline;">
+                    <form action="{{ url_for('delete', file_id=file._id) }}" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
                 </td>
@@ -106,7 +106,7 @@
                 <td>{{ file.file_name }}</td>
                 <td>
                     <a href="{{ url_for('download', file_name=file.file_name) }}" class="btn btn-primary btn-sm">Download</a>
-                    <form action="{{ url_for('delete', file_name=file.file_name) }}" method="post" style="display:inline;">
+                    <form action="{{ url_for('delete', file_id=file._id) }}" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
                 </td>

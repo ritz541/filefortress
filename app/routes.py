@@ -49,7 +49,8 @@ def register():
 def login():
     
     if 'username' in session:
-        return render_template('dashboard.html')
+        # flash("You are already logged in", 'warning')
+        return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -160,15 +161,19 @@ def upload():
 
 @app.route('/decrypt', methods=['GET', 'POST'])
 def decrypt():
-    
+    # Ensure user is logged in (uncomment this if login is implemented)
     if 'username' not in session:
         return redirect(url_for('login'))
-    
+
     user = users_collection.find_one({
-        'username': session['username']
+        'username': session.get('username')  # Use `get` to avoid KeyError
     })
-    user_id = user['_id']
+    if not user:
+        flash('User not found. Please log in again.', 'error')
+        return redirect(url_for('login'))  # Redirect to login if user not found
     
+    user_id = user['_id']
+
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No file part', 'error')
@@ -188,40 +193,35 @@ def decrypt():
             try:
                 decrypted_data = decrypt_file(filepath, password)
 
+                # Save the decrypted file
                 decrypted_filename = 'decrypted_' + file.filename
                 decrypted_filepath = os.path.join(app.config['UPLOAD_FOLDER'], decrypted_filename)
                 with open(decrypted_filepath, 'wb') as f:
                     f.write(decrypted_data)
 
-                flash('File decrypted successfully!', 'success')
-                
+                # Insert into collections
                 decrypted_files_collection.insert_one({
                     "file_name": decrypted_filename,
                     "user_id": user_id
                 })
-                
                 all_files_collection.insert_one({
                     "file_name": decrypted_filename,
                     "user_id": user_id
                 })
 
-                safe_filepath = safe_join(current_app.root_path, app.config['UPLOAD_FOLDER'], decrypted_filename)
-                if os.path.exists(decrypted_filepath):
-                    return send_file(decrypted_filepath, as_attachment=True)
-                else:
-                    flash('Decrypted file could not be found.', 'error')
-                    return redirect(request.url)
+                # Flash a success message and redirect to dashboard
+                flash('File decrypted successfully!', 'success')
+                return redirect(url_for('dashboard'))
 
-                # return send_file(safe_filepath, as_attachment=True)
-
-            except ValueError as e:
+            except ValueError:
                 flash('Incorrect password or decryption failed.', 'error')
                 return redirect(request.url)
             except Exception as e:
-                # flash(f'An error occurred: {str(e)}', 'error')
+                flash(f'An error occurred: {str(e)}', 'error')
                 return redirect(request.url)
 
     return render_template('decrypt.html')
+
 
 @app.route('/download/<file_name>')
 def download(file_name):
@@ -229,6 +229,24 @@ def download(file_name):
     return send_file(file_path, as_attachment=True)
 
 
-@app.route('/delete')
-def delete():
-    pass
+@app.route('/delete/<file_id>', methods=['POST'])
+def delete(file_id):
+    try:
+        # Convert file_id string to ObjectId
+        object_id = ObjectId(file_id)
+
+        # Attempt to delete from both collections
+        encrypted_result = encrypted_files_collection.delete_one({"_id": object_id})
+        decrypted_result = decrypted_files_collection.delete_one({"_id": object_id})
+
+        # Determine the outcome
+        if encrypted_result.deleted_count > 0 or decrypted_result.deleted_count > 0:
+            flash('File deleted successfully!', 'success')
+        else:
+            flash('File not found in either collection.', 'warning')
+
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'danger')
+
+    # Redirect back to the dashboard with updated data
+    return redirect(url_for('dashboard'))
