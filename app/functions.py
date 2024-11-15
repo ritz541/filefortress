@@ -4,7 +4,8 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad,unpad
 
 def get_db():
-    client = MongoClient('mongodb+srv://Cluster99782:RURham9Iamlq@cluster99782.mqer5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster99782')
+    client = MongoClient('mongodb://localhost:27017/')
+
     db = client['encryption_db']
     return db
 

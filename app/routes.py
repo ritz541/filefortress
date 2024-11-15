@@ -7,6 +7,7 @@ from app.functions import get_db, encrypt_file, decrypt_file
 
 db = get_db()
 users_collection = db['users']
+files_collection = db['files']
 
 @app.route('/')
 def home():
@@ -14,6 +15,11 @@ def home():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    
+    if 'username' in session:
+        # flash("You are already logged in", 'warning')
+        return redirect(url_for('dashboard'))
+    
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -74,6 +80,11 @@ def upload():
         flash('You are not logged in', 'warning')
         return redirect(url_for('login'))
     
+    user = users_collection.find_one({
+        'username': session['username']
+    })
+    user_id = user['_id']
+    
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No file part', 'error')
@@ -97,12 +108,25 @@ def upload():
                 f.write(encrypted_data)
 
             flash('File uploaded and encrypted successfully!', 'success')
+            
+            
+            #add file name into new table and associate it with user id from users collection with file id.
+            
+            files_collection.insert_one({
+                'file_name': filename,
+                'user_id': user_id
+            })
+            
             return redirect(url_for('dashboard'))
 
     return render_template('upload.html')
 
 @app.route('/decrypt', methods=['GET', 'POST'])
 def decrypt():
+    
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No file part', 'error')
