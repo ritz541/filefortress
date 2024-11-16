@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neubrutalist Forum</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #9b4d96; /* Purple */
+        --secondary: #b6b6b6; /* Light Grey */
+        --accent: #e8c9f1; /* Lavender */
+        --black: #2a2a2a; /* Dark Grey */
+        --white: #ffffff; /* White */
+      }
+
+      @font-face {
+        font-family: "Space Grotesk";
+        src: url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap");
+      }
+
+      body {
+        background-color: var(--white);
+        color: var(--black);
+        font-family: "Space Grotesk", sans-serif;
+        min-height: 100vh;
+      }
+
+      .navbar {
+        background: var(--accent);
+        border: 3px solid var(--black);
+        box-shadow: 8px 8px 0 var(--black);
+        margin: 1rem;
+        padding: 1rem;
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--black);
+        text-transform: uppercase;
+      }
+
+      .main-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        display: flex;
+        gap: 2rem;
+      }
+
+      .sidebar {
+        width: 300px;
+        background: var(--primary);
+        border: 3px solid var(--black);
+        box-shadow: 8px 8px 0 var(--black);
+        padding: 1.5rem;
+        height: fit-content;
+      }
+
+      .forum-container {
+        flex: 1;
+        background: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 8px 8px 0 var(--black);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .forum-header {
+        background: var(--secondary);
+        padding: 1.5rem;
+        border-bottom: 3px solid var(--black);
+      }
+
+      .forum-header h2 {
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 0;
+      }
+
+      .channel-info {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--black);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .messages-container {
+        height: calc(100vh - 300px);
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        background: var(--white);
+      }
+
+      .message {
+        background: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 5px 5px 0 var(--black);
+        padding: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .message:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 7px 7px 0 var(--black);
+      }
+
+      .message-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 2px solid var(--black);
+        padding-bottom: 0.5rem;
+      }
+
+      .username {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 1.1rem;
+      }
+
+      .timestamp {
+        color: var(--black);
+        font-weight: 500;
+      }
+
+      .message-content {
+        color: var(--black);
+        line-height: 1.5;
+        font-size: 1.1rem;
+      }
+
+      .input-container {
+        padding: 1.5rem;
+        border-top: 3px solid var(--black);
+        background: var(--accent);
+      }
+
+      .form-control {
+        border: 3px solid var(--black);
+        border-radius: 0;
+        padding: 1rem;
+        font-size: 1.1rem;
+        box-shadow: 5px 5px 0 var(--black);
+        transition: all 0.2s ease;
+      }
+
+      .form-control:focus {
+        transform: translate(-2px, -2px);
+        box-shadow: 7px 7px 0 var(--black);
+        outline: none;
+      }
+
+      .nav-link {
+        color: var(--black);
+        padding: 0.8rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        border: 3px solid var(--black);
+        box-shadow: 4px 4px 0 var(--black);
+        transition: all 0.2s ease;
+        background: var(--white);
+      }
+
+      .nav-link:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0 var(--black);
+        color: var(--black);
+        background: var(--secondary);
+      }
+
+      .nav-link.active {
+        background: var(--secondary);
+        color: var(--black);
+      }
+
+      .status-indicator {
+        width: 12px;
+        height: 12px;
+        background: var(--primary);
+        border: 2px solid var(--black);
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+      }
+
+      /* Custom Scrollbar */
+      .messages-container::-webkit-scrollbar {
+        width: 12px;
+        background: var(--white);
+        border-left: 3px solid var(--black);
+      }
+
+      .messages-container::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border: 2px solid var(--black);
+      }
+
+      .messages-container::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary);
+      }
+
+      .user-status {
+        background: var(--secondary);
+        padding: 0.5rem 1rem;
+        border: 3px solid var(--black);
+        box-shadow: 4px 4px 0 var(--black);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+        <a class="navbar-brand" href="#">FORUM.IO</a>
+        <div class="user-status">
+          <span class="status-indicator"></span>
+          {{ session['username'] }}
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-container">
+      <div class="sidebar">
+        <nav class="nav flex-column">
+          <a class="nav-link active" href="#">GENERAL</a>
+          <a class="nav-link" href="#">ANNOUNCEMENTS</a>
+          <a class="nav-link" href="#">SUPPORT</a>
+          <a class="nav-link" href="#">FEEDBACK</a>
+        </nav>
+      </div>
+
+      <div class="forum-container">
+        <div class="forum-header">
+          <h2>GENERAL DISCUSSION</h2>
+          <div class="channel-info">
+            <i class="fas fa-hashtag"></i>
+            SEC-{{ range(1000, 9999) | random }}
+          </div>
+        </div>
+
+        <div class="messages-container" id="chat-container">
+          {% for message in messages %}
+          <div class="message">
+            <div class="message-header">
+              <span class="username">{{ message['username'] }}</span>
+              <span class="timestamp">
+                {{ message['timestamp'].strftime('%Y-%m-%d %H:%M:%S') if
+                message.get('timestamp') else '0000-00-00 00:00:00' }}
+              </span>
+            </div>
+            <div class="message-content">{{ message['message'] }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="input-container">
+          <form
+            action="{{ url_for('group_chat') }}"
+            method="POST"
+            id="message-form"
+          >
+            <textarea
+              class="form-control"
+              name="message"
+              id="message"
+              rows="2"
+              placeholder="Type your message..."
+              required
+            ></textarea>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function scrollToBottom() {
+        const chatContainer = document.getElementById("chat-container");
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      scrollToBottom();
+
+      // Auto-refresh messages
+      setInterval(function () {
+        fetch(window.location.href)
+          .then((response) => response.text())
+          .then((html) => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            const newChat = doc.getElementById("chat-container");
+            document.getElementById("chat-container").innerHTML =
+              newChat.innerHTML;
+            scrollToBottom();
+          });
+      }, 3000);
+
+      // Handle Enter key and form submission
+      const messageForm = document.getElementById("message-form");
+      const textarea = document.getElementById("message");
+
+      textarea.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          const message = this.value.trim();
+          if (message) {
+            messageForm.submit();
+          }
+        }
+      });
+
+      messageForm.addEventListener("submit", function (e) {
+        const message = textarea.value.trim();
+        if (!message) {
+          e.preventDefault();
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, flash, url_for, send_file, session
 from app import app
 import config
-import scrypt, os, hmac
+import scrypt, os, hmac, random
 from werkzeug.utils import secure_filename
 from app.functions import get_db, encrypt_file, decrypt_file
 from bson.objectid import ObjectId
@@ -13,6 +13,7 @@ all_files_collection = db['all_files']
 users_collection = db['users']
 encrypted_files_collection = db['encrypted_files']
 decrypted_files_collection = db['decrytped_files']
+group_chat_collection = db['group_chat']
 
 @app.route('/')
 def home():
@@ -268,7 +269,35 @@ def delete(file_id):
     # Redirect back to the dashboard
     return redirect(url_for('dashboard'))
 
-#add route for settings page
-@app.route('/settings', methods=['GET', 'POST'])
-def settings():
-    return render_template('settings.html')
+@app.route('/group_chat', methods=['GET', 'POST'])
+def group_chat():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    user = users_collection.find_one({'username': session['username']})
+    if not user:
+        session.clear()
+        return redirect(url_for('login'))
+    
+    user_id = user['_id']
+
+    if request.method == 'POST':
+        message = request.form.get('message')
+        if message and message.strip():
+            # Add some randomization to message IDs for extra "secrecy"
+            message_id = f"MSG-{random.randint(1000, 9999)}-{random.randint(100, 999)}"
+            
+            group_chat_collection.insert_one({
+                "message_id": message_id,
+                "message": message.strip(),
+                "username": session['username'],
+                "user_id": user_id,
+                "timestamp": datetime.now(),
+                "encryption_status": "SECURED"  # Just for show
+            })
+
+    # Get messages with sorting
+    messages = list(group_chat_collection.find({}).sort("timestamp", -1).limit(50))
+    messages.reverse()
+    
+    return render_template('group_chat.html', messages=messages)
