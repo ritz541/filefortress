@@ -5,7 +5,7 @@ from Crypto.Util.Padding import pad,unpad
 from flask import session
 
 def get_db():
-    client = MongoClient('mongodb://localhost:27017/')
+    client = MongoClient('mongodb+srv://pineapple:pineapple@project.8ba24.mongodb.net/?retryWrites=true&w=majority&appName=Project')
 
     db = client['encryption_db']
     return db
