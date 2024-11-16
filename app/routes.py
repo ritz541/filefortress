@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, flash, url_for, send_file, session
 from app import app
 import config
-import scrypt, os, time
+import scrypt, os, hmac
 from werkzeug.utils import secure_filename
 from app.functions import get_db, encrypt_file, decrypt_file
 from bson.objectid import ObjectId
@@ -20,39 +20,52 @@ def home():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    
+    alert_message = None
+
     if 'username' in session:
-        # flash("You are already logged in", 'warning')
+        # User is already logged in
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         email = request.form.get('email')
         username = request.form.get('username')
         password = request.form.get('password')
-        
-        salt = os.urandom(16)
-        hashed_password = scrypt.hash(password, salt)
-        
-        users_collection.insert_one({
-            "email": email,
-            "username": username,
-            "password": hashed_password,
-            "salt": salt
-        })
-        
-        return redirect(url_for('register'))
-    return render_template('register.html')
+
+        # Check if user already exists
+        existing_user = users_collection.find_one({"email": email})
+        if existing_user:
+            alert_message = "An account with this email already exists."
+        else:
+            # Generate salt and hashed password
+            salt = os.urandom(16)
+            hashed_password = scrypt.hash(password, salt)
+
+            # Insert new user into the database
+            users_collection.insert_one({
+                "email": email,
+                "username": username,
+                "password": hashed_password,
+                "salt": salt
+            })
+
+            alert_message = "Registration successful. You can now log in."
+            return render_template('register.html', alert_message=alert_message)
+
+    return render_template('register.html', alert_message=alert_message)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    
+    # Redirect to dashboard if already logged in
     if 'username' in session:
         return redirect(url_for('dashboard'))
-    
+
+    alert_message = None
+
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        
+
+        # Fetch the user from the database
         user = users_collection.find_one({"email": email})
 
         if user:
@@ -60,18 +73,20 @@ def login():
             stored_salt = user['salt']
             entered_hash = scrypt.hash(password, stored_salt)
 
-            if entered_hash == stored_hash:
+            # Securely compare hashes
+            if hmac.compare_digest(entered_hash, stored_hash):
+                # Set session variables and redirect
                 username = user['username']
                 session['logged_in'] = True
                 session['username'] = username
-                flash('You have successfully logged in! Redirecting in 3..2..1', 'success')
-                return render_template('login.html', title='Login', delayed_redirect=url_for('dashboard'))
+                return redirect(url_for('dashboard'))
             else:
-                flash("Invalid password", "error")
+                alert_message = "Invalid password. Please try again."
         else:
-            flash("User not found", "error")
+            alert_message = "User not found. Please register first."
 
-    return render_template('login.html')
+    # Render login page with an optional alert message
+    return render_template('login.html', title='Login', alert_message=alert_message)
 
 @app.route('/logout')
 def logout():
@@ -99,91 +114,95 @@ def dashboard():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
+    alert_message = None  # To hold the alert message
+
     if 'username' not in session:
         flash('You are not logged in', 'warning')
         return redirect(url_for('login'))
     
-    user = users_collection.find_one({
-        'username': session['username']
-    })
+    user = users_collection.find_one({'username': session['username']})
     user_id = user['_id']
     
     if request.method == 'POST':
         if 'file' not in request.files:
-            flash('No file part', 'error')
-            return redirect(request.url)
+            alert_message = 'No file part provided.'
+            return render_template('upload.html', alert_message=alert_message)
 
         file = request.files['file']
         password = request.form.get('password')
 
-        if file.filename == '':
-            flash('No selected file', 'error')
-            return redirect(request.url)
+        if not file.filename:
+            alert_message = 'No file selected.'
+            return render_template('upload.html', alert_message=alert_message)
 
         if file and password:
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+            try:
+                # Secure the filename and save the file
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
 
-            encrypted_data = encrypt_file(filepath, password)
+                # Encrypt the file
+                encrypted_data = encrypt_file(filepath, password)
+                with open(filepath, 'wb') as f:
+                    f.write(encrypted_data)
 
-            with open(filepath, 'wb') as f:
-                f.write(encrypted_data)
+                # Save file metadata in the database
+                upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                encrypted_files_collection.insert_one({
+                    'file_name': filename,
+                    'user_id': user_id,
+                    'upload_date': upload_date
+                })
+                all_files_collection.insert_one({
+                    'file_name': filename,
+                    'user_id': user_id,
+                    'upload_date': upload_date
+                })
 
-            flash('File uploaded and encrypted successfully!', 'success')
-            
-            upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                alert_message = 'File uploaded and encrypted successfully!'
+                return render_template('upload.html', alert_message=alert_message)
+            except Exception as e:
+                alert_message = f"An error occurred: {str(e)}"
+                return render_template('upload.html', alert_message=alert_message)
 
-            encrypted_files_collection.insert_one({
-                'file_name': filename,
-                'user_id': user_id,
-                'upload_date': upload_date
-            })
-            
-            all_files_collection.insert_one({
-                'file_name': filename,
-                'user_id': user_id,
-                'upload_date': upload_date
-            })
-            
-            
-            
-            return redirect(url_for('dashboard'))
-
-    return render_template('upload.html')
+    return render_template('upload.html', alert_message=alert_message)
 
 @app.route('/decrypt', methods=['GET', 'POST'])
 def decrypt():
-    # Ensure user is logged in (uncomment this if login is implemented)
+    alert_message = None  # Variable to hold alert messages
+
+    # Check if user is logged in
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    user = users_collection.find_one({
-        'username': session.get('username')  # Use `get` to avoid KeyError
-    })
+    user = users_collection.find_one({'username': session.get('username')})
     if not user:
         flash('User not found. Please log in again.', 'error')
-        return redirect(url_for('login'))  # Redirect to login if user not found
-    
+        return redirect(url_for('login'))
+
     user_id = user['_id']
 
     if request.method == 'POST':
+        # Check if file part exists
         if 'file' not in request.files:
-            flash('No file part', 'error')
-            return redirect(request.url)
+            alert_message = 'No file part provided.'
+            return render_template('decrypt.html', alert_message=alert_message)
 
         file = request.files['file']
         password = request.form.get('password')
 
-        if file.filename == '':
-            flash('No selected file', 'error')
-            return redirect(request.url)
+        # Check if a file is selected
+        if not file.filename:
+            alert_message = 'No file selected.'
+            return render_template('decrypt.html', alert_message=alert_message)
 
         if file and password:
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
             file.save(filepath)
 
             try:
+                # Attempt to decrypt the file
                 decrypted_data = decrypt_file(filepath, password)
 
                 # Save the decrypted file
@@ -192,9 +211,8 @@ def decrypt():
                 with open(decrypted_filepath, 'wb') as f:
                     f.write(decrypted_data)
 
+                # Record the decryption in the database
                 upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-                # Insert into collections
                 decrypted_files_collection.insert_one({
                     "file_name": decrypted_filename,
                     "user_id": user_id,
@@ -206,18 +224,17 @@ def decrypt():
                     'upload_date': upload_date
                 })
 
-                # Flash a success message and redirect to dashboard
-                flash('File decrypted successfully!', 'success')
-                return redirect(url_for('dashboard'))
+                alert_message = 'File decrypted successfully!'
+                return render_template('decrypt.html', alert_message=alert_message)
 
             except ValueError:
-                flash('Incorrect password or decryption failed.', 'error')
-                return redirect(request.url)
+                alert_message = 'Incorrect password or decryption failed.'
+                return render_template('decrypt.html', alert_message=alert_message)
             except Exception as e:
-                flash(f'An error occurred: {str(e)}', 'error')
-                return redirect(request.url)
+                alert_message = f'An error occurred: {str(e)}'
+                return render_template('decrypt.html', alert_message=alert_message)
 
-    return render_template('decrypt.html')
+    return render_template('decrypt.html', alert_message=alert_message)
 
 @app.route('/download/<file_name>')
 def download(file_name):
@@ -227,21 +244,26 @@ def download(file_name):
 @app.route('/delete/<file_id>', methods=['POST'])
 def delete(file_id):
     try:
-        # Convert file_id string to ObjectId
-        object_id = ObjectId(file_id)
+        # Validate and convert file_id to ObjectId
+        try:
+            object_id = ObjectId(file_id)
+        except Exception as e:
+            flash('Invalid file ID.', 'warning')
+            return redirect(url_for('dashboard'))
 
-        # Attempt to delete from both collections
+        # Try to delete the file record from both collections
         encrypted_result = encrypted_files_collection.delete_one({"_id": object_id})
         decrypted_result = decrypted_files_collection.delete_one({"_id": object_id})
+        all_result = all_files_collection.delete_one({"_id": object_id})
 
-        # Determine the outcome
-        if encrypted_result.deleted_count > 0 or decrypted_result.deleted_count > 0:
+        # Check deletion results
+        if any([encrypted_result.deleted_count, decrypted_result.deleted_count, all_result.deleted_count]):
             flash('File deleted successfully!', 'success')
         else:
-            flash('File not found in either collection.', 'warning')
+            flash('File not found in any collection.', 'warning')
 
     except Exception as e:
-        flash(f'Error: {str(e)}', 'danger')
+        flash(f'An error occurred: {str(e)}', 'danger')
 
-    # Redirect back to the dashboard with updated data
+    # Redirect back to the dashboard
     return redirect(url_for('dashboard'))

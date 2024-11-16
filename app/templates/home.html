@@ -6,9 +6,9 @@
     <p class="lead">A secure platform to store and encrypt your files.</p>
     <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
         <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
-        <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
+        {% comment %} <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
         <a href="{{ url_for('upload') }}" class="btn btn-success">Upload File</a>
-        <a href="{{ url_for('decrypt') }}" class="btn btn-warning">Decrypt File</a>
+        <a href="{{ url_for('decrypt') }}" class="btn btn-warning">Decrypt File</a> {% endcomment %}
     </div>
 </div>
 {% endblock %}

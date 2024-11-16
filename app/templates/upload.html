@@ -1,9 +1,14 @@
-<!-- templates/upload.html -->
 {% extends "base.html" %}
 {% block content %}
 <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
     <div class="form-container">
-        <h2 class="text-center">Upload and Encrypt File</h2>
+        {% if alert_message %}
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            {{ alert_message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        <h2 class="text-center mb-4">Upload and Encrypt File</h2>
         <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="file" class="form-label">Choose File</label>
@@ -11,7 +16,13 @@
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Encryption Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+                <input 
+                    type="password" 
+                    class="form-control" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    value="{{ request.form.password if request.form else '' }}">
             </div>
             <button type="submit" class="btn btn-primary w-100">Upload & Encrypt</button>
         </form>
