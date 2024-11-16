@@ -112,6 +112,12 @@
         padding: 1rem;
         transition: all 0.2s ease;
       }
+      .message-content {
+        color: black; /* Makes the message text black */
+        font-weight: bold; /* Makes the message text bold */
+        line-height: 1.5;
+        font-size: 1.1rem;
+      }
 
       .message:hover {
         transform: translate(-2px, -2px);
@@ -222,6 +228,76 @@
         box-shadow: 4px 4px 0 var(--black);
         font-weight: 700;
       }
+
+      .back-to-dashboard-button {
+        position: fixed;
+        bottom: 20px; /* Adjust the distance from the bottom */
+        left: 20px; /* Adjust the distance from the left */
+        z-index: 1000; /* Ensure the button stays on top */
+      }
+
+      .back-to-dashboard-button button {
+        background: var(--primary);
+        color: var(--white);
+        font-weight: 700;
+        border: 3px solid var(--black);
+        padding: 1rem 2rem;
+        box-shadow: 5px 5px 0 var(--black);
+        transition: all 0.2s ease;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+      }
+
+      .back-to-dashboard-button button:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 7px 7px 0 var(--black);
+        background: var(--secondary);
+        color: var(--black);
+      }
+    </style>
+
+    <style>
+      /* Ensure the input container stays at the bottom of the forum */
+      .forum-container {
+        flex: 1;
+        background: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 8px 8px 0 var(--black);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end; /* Push content to the bottom */
+      }
+
+      .messages-container {
+        height: calc(100vh - 300px);
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        background: var(--white);
+      }
+
+      .input-container {
+        padding: 1.5rem;
+        border-top: 3px solid var(--black);
+        background: var(--accent);
+      }
+
+      .form-control {
+        border: 3px solid var(--black);
+        border-radius: 0;
+        padding: 1rem;
+        font-size: 1.1rem;
+        box-shadow: 5px 5px 0 var(--black);
+        transition: all 0.2s ease;
+      }
+
+      .form-control:focus {
+        transform: translate(-2px, -2px);
+        box-shadow: 7px 7px 0 var(--black);
+        outline: none;
+      }
     </style>
   </head>
   <body>
@@ -287,7 +363,10 @@
         </div>
       </div>
     </div>
-
+    <!-- Button to go back to dashboard -->
+    <a href="{{ url_for('dashboard') }}" class="back-to-dashboard-button">
+      <button class="btn btn-dark">Back to Dashboard</button>
+    </a>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       function scrollToBottom() {
@@ -295,9 +374,15 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
       }
 
-      scrollToBottom();
+      // Scroll to the bottom when the page loads
+      window.onload = function () {
+        scrollToBottom();
 
-      // Auto-refresh messages
+        // Set focus to the textarea
+        document.getElementById("message").focus();
+      };
+
+      // Auto-refresh messages every 3 seconds
       setInterval(function () {
         fetch(window.location.href)
           .then((response) => response.text())
