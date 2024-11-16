@@ -1,13 +1,23 @@
-import os, scrypt
+import os
+import scrypt
 from pymongo import MongoClient
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad,unpad
+from Crypto.Util.Padding import pad, unpad
 from flask import session
 
 def get_db():
-    client = MongoClient('mongodb+srv://pineapple:pineapple@project.8ba24.mongodb.net/?retryWrites=true&w=majority&appName=Project')
-
+    # Get the MongoDB URI from the environment variable
+    mongo_uri = os.getenv('MONGO_URI')
+    
+    if not mongo_uri:
+        raise ValueError("MongoDB URI not set in environment variables")
+    
+    # Connect to the MongoDB cluster
+    client = MongoClient(mongo_uri)
+    
+    # Select the database
     db = client['encryption_db']
+    
     return db
 
 
