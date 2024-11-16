@@ -10,6 +10,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+
+     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
@@ -18,122 +23,403 @@
 </head>
 
 <body>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('home') }}">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" width="30" height="30">My Dashboard</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home') }}"><img
-                                src="{{ url_for('static', filename='images/home_1.png') }}" alt="Upload Icon" width="20"
-                                height="20" class="me-1">Home</a>
-                    </li>
-                    {% if 'username' in session %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('upload') }}">
-                            <img src="{{ url_for('static', filename='images/document.png') }}" alt="Upload Icon"
-                                width="20" height="20" class="me-1">
-                            Upload
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('decrypt') }}">
-                            <img src="{{ url_for('static', filename='images/decrypt_1.png') }}" alt="Decrypt Icon"
-                                width="20" height="20" class="me-1">
-                            Decrypt
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">
-                            <img src="{{ url_for('static', filename='images/logout_1.png') }}" alt="Logout Icon"
-                                width="20" height="20" class="me-1">
-                            Logout
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <span class="navbar-text ms-3">
-                            <img src="{{ url_for('static', filename='images/user_1.png') }}" alt="User Icon" width="20"
-                                height="20" class="me-1">
-                            Hello, {{ session['username'] }}!
-                        </span>
-                    </li>
-
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
-                    </li>
-                    {% endif %}
-                </ul>
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+            <div class="brand-icon rounded-circle bg-primary d-flex align-items-center justify-content-center me-2">
+                <i class="bi bi-shield-lock text-white"></i>
             </div>
-        </div>
-    </nav>
+            <span class="fw-bold">SecureVault</span>
+        </a>
 
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <!-- Navigation Items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link px-3 d-flex align-items-center" href="{{ url_for('home') }}">
+                        <i class="bi bi-house me-2"></i>
+                        Home
+                    </a>
+                </li>
+
+                {% if 'username' in session %}
+                <li class="nav-item">
+                    <a class="nav-link px-3 d-flex align-items-center" href="{{ url_for('upload') }}">
+                        <i class="bi bi-cloud-upload me-2"></i>
+                        Upload
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link px-3 d-flex align-items-center" href="{{ url_for('decrypt') }}">
+                        <i class="bi bi-unlock me-2"></i>
+                        Decrypt
+                    </a>
+                </li>
+
+                <!-- User Menu Dropdown -->
+                <li class="nav-item dropdown ms-2">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center user-menu" href="#" id="userDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                            <i class="bi bi-person-fill text-white"></i>
+                        </div>
+                        <span>{{ session['username'] }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+                        <li>
+                            <span class="dropdown-item-text">
+                                <small class="text-muted">Signed in as</small><br>
+                                <strong>{{ session['username'] }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Sign Out
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="{{ url_for('login') }}">
+                        <button class="btn btn-outline-primary btn-sm px-3">Sign In</button>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="{{ url_for('register') }}">
+                        <button class="btn btn-primary btn-sm px-3">Register</button>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+
+
+    @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+body {
+    font-family: "Arvo", serif;
+    font-weight: 400;
+}
+
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+}
+
+.navbar-nav .nav-link {
+    position: relative;
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+/* Dropdown styling */
+.dropdown-menu {
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+.dropdown-item {
+    padding: 0.7rem 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item-text {
+    padding: 0.7rem 1.2rem;
+}
+
+/* Mobile optimization */
+@media (max-width: 991.98px) {
+    .navbar-nav {
+        padding: 1rem 0;
+    }
+    
+    .nav-link {
+        padding: 0.5rem 0;
+    }
+    
+    .dropdown-menu {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .user-menu {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(0,0,0,0.1);
+    }
+}
+
+/* Button hover effects */
+.btn {
+    transition: transform 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+
+<script>
+// Optional: Add active state to current nav item
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
     <!-- Main Content -->
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
 
-<!-- Files Table -->
-<div class="container mt-5">
-    <h1 class="text-center mb-4">All Files</h1>
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <table class="table table-sm table-responsive table-striped table-bordered text-center" style="width: 60%; margin: auto;">
-                <caption>List of Files</caption>
-                <thead class="table-dark">
-                    <tr>
-                        <th>S.No</th>
-                        <th>File Name</th>
-                        <th>Upload Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Encrypted Files -->
-                    {% for file in encrypted_files %}
-                    <tr>
-                        <td>{{ loop.index }}</td> <!-- Serial number -->
-                        <td>{{ file.file_name }}</td>
-                        <td>{{ file.upload_date }}</td>
-                        <td>
-                            <a href="{{ url_for('download', file_name=file.file_name) }}" class="btn btn-success btn-sm">Download</a>
-                            <a href="{{ url_for('decrypt', file_name=file.file_name) }}" class="btn btn-primary btn-sm">Decrypt</a>
-                            <form action="{{ url_for('delete', file_id=file._id) }}" method="POST" style="display: inline;">
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this file?');">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    
-                    <!-- Decrypted Files -->
-                    {% for file in decrypted_files %}
-                    <tr>
-                        <td>{{ loop.index + encrypted_files|length }}</td> <!-- Continue numbering -->
-                        <td>{{ file.file_name }}</td>
-                        <td>{{ file.upload_date }}</td>
-                        <td>
-                            <a href="{{ url_for('download', file_name=file.file_name) }}" class="btn btn-success btn-sm">Download</a>
-                            <form action="{{ url_for('delete', file_id=file._id) }}" method="POST" style="display: inline;">
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this file?');">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+
+
+    @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+body {
+    font-family: "Arvo", serif;
+    font-weight: 400;
+}
+        .files-container {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .custom-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            padding: 2rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .table > thead {
+            background: #0d6efd;
+            color: white;
+        }
+        .action-btn {
+            transition: all 0.3s ease;
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        .file-count-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stats-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <!-- Header Section -->
+        <div class="custom-header text-center mb-4">
+            <h1 class="display-4 mb-0">
+                <i class="fas fa-shield-alt me-3"></i>Secure File Management
+            </h1>
+            <p class="lead mt-2 mb-0">Manage your encrypted and decrypted files securely</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card file-count-card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-alt stats-icon"></i>
+                        <h5 class="card-title">Total Files</h5>
+                        <h3 class="mb-0">{{ encrypted_files|length + decrypted_files|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card file-count-card bg-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-lock stats-icon"></i>
+                        <h5 class="card-title">Encrypted Files</h5>
+                        <h3 class="mb-0">{{ encrypted_files|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card file-count-card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-lock-open stats-icon"></i>
+                        <h5 class="card-title">Decrypted Files</h5>
+                        <h3 class="mb-0">{{ decrypted_files|length }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Files Table -->
+        <div class="files-container">
+            <div class="table-container">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 80px">
+                                <i class="fas fa-hashtag"></i>
+                            </th>
+                            <th>
+                                <i class="fas fa-file me-2"></i>File Name
+                            </th>
+                            <th>
+                                <i class="fas fa-calendar-alt me-2"></i>Upload Date
+                            </th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Encrypted Files -->
+                        {% for file in encrypted_files %}
+                        <tr class="align-middle">
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td>
+                                <i class="fas fa-lock text-warning me-2"></i>
+                                {{ file.file_name }}
+                            </td>
+                            <td>{{ file.upload_date }}</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('download', file_name=file.file_name) }}" 
+                                       class="btn btn-outline-success btn-sm action-btn" 
+                                       data-bs-toggle="tooltip" 
+                                       title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{{ url_for('decrypt', file_name=file.file_name) }}" 
+                                       class="btn btn-outline-primary btn-sm action-btn"
+                                       data-bs-toggle="tooltip" 
+                                       title="Decrypt">
+                                        <i class="fas fa-lock-open"></i>
+                                    </a>
+                                    <form action="{{ url_for('delete', file_id=file._id) }}" method="POST" class="d-inline">
+                                        <button type="submit" 
+                                                class="btn btn-outline-danger btn-sm action-btn"
+                                                data-bs-toggle="tooltip" 
+                                                title="Delete"
+                                                onclick="return confirm('Are you sure you want to delete this file?');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        <!-- Decrypted Files -->
+                        {% for file in decrypted_files %}
+                        <tr class="align-middle">
+                            <td class="text-center">{{ loop.index + encrypted_files|length }}</td>
+                            <td>
+                                <i class="fas fa-unlock text-success me-2"></i>
+                                {{ file.file_name }}
+                            </td>
+                            <td>{{ file.upload_date }}</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('download', file_name=file.file_name) }}" 
+                                       class="btn btn-outline-success btn-sm action-btn"
+                                       data-bs-toggle="tooltip" 
+                                       title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <form action="{{ url_for('delete', file_id=file._id) }}" method="POST" class="d-inline">
+                                        <button type="submit" 
+                                                class="btn btn-outline-danger btn-sm action-btn"
+                                                data-bs-toggle="tooltip" 
+                                                title="Delete"
+                                                onclick="return confirm('Are you sure you want to delete this file?');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+</body>
+</html>
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,14 +1,190 @@
-<!-- templates/home.html -->
 {% extends "base.html" %}
 {% block content %}
-<div class="text-center">
-    <h1>Welcome to Secure File Storage</h1>
-    <p class="lead">A secure platform to store and encrypt your files.</p>
-    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-        <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
-        {% comment %} <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
-        <a href="{{ url_for('upload') }}" class="btn btn-success">Upload File</a>
-        <a href="{{ url_for('decrypt') }}" class="btn btn-warning">Decrypt File</a> {% endcomment %}
+<!-- Hero Section -->
+<div class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <h1 class="display-3 fw-bold mb-4">Secure File Storage</h1>
+                <p class="lead mb-4">Your files, your privacy, our priority. Enterprise-grade encryption keeping your data safe and accessible anywhere.</p>
+                <div class="d-grid gap-3 d-sm-flex">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4 py-2">Get Started Free</a>
+                    <a href="#features" class="btn btn-outline-light btn-lg px-4 py-2">Learn More</a>
+                </div>
+            </div>
+            
+        </div>
     </div>
 </div>
+
+<!-- Stats Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <h2 class="display-4 text-primary fw-bold">100K+</h2>
+                        <p class="text-muted">Active Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <h2 class="display-4 text-primary fw-bold">99.9%</h2>
+                        <p class="text-muted">Uptime</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <h2 class="display-4 text-primary fw-bold">256-bit</h2>
+                        <p class="text-muted">Encryption</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div id="features" class="container py-5">
+    <h2 class="text-center mb-5">Why Choose Us?</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-primary text-white rounded-circle mb-3">
+                        <i class="bi bi-shield-lock fs-4"></i>
+                    </div>
+                    <h5 class="card-title">End-to-End Encryption</h5>
+                    <p class="card-text text-muted">Your files are encrypted before they leave your device, ensuring maximum security.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-primary text-white rounded-circle mb-3">
+                        <i class="bi bi-cloud-upload fs-4"></i>
+                    </div>
+                    <h5 class="card-title">Easy File Management</h5>
+                    <p class="card-text text-muted">Upload, organize, and access your files from anywhere with our intuitive interface.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm hover-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-primary text-white rounded-circle mb-3">
+                        <i class="bi bi-share fs-4"></i>
+                    </div>
+                    <h5 class="card-title">Secure Sharing</h5>
+                    <p class="card-text text-muted">Share files securely with team members while maintaining full control.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h2 class="mb-4">Ready to get started?</h2>
+                <p class="lead mb-4">Join thousands of users who trust us with their data security.</p>
+                <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4 py-2">Create Free Account</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4 py-2">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="container py-5">
+    <div class="row justify-content-center g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3">Quick Upload</h5>
+                    <p class="card-text text-muted mb-4">Securely upload and encrypt your files in seconds.</p>
+                    <a href="{{ url_for('upload') }}" class="btn btn-success w-100">
+                        <i class="bi bi-cloud-upload me-2"></i>Upload File
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3">File Decryption</h5>
+                    <p class="card-text text-muted mb-4">Access your encrypted files with secure decryption.</p>
+                    <a href="{{ url_for('decrypt') }}" class="btn btn-warning w-100">
+                        <i class="bi bi-unlock me-2"></i>Decrypt File
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-light py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <p class="text-muted mb-0">
+                    Need help? <a href="#" class="text-primary">Contact Support</a> |
+                    <a href="#" class="text-primary">Privacy Policy</a> |
+                    <a href="#" class="text-primary">Terms of Service</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+
+    @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+body {
+    font-family: "Arvo", serif;
+    font-weight: 400;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.hover-card {
+    transition: transform 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Add some animation to stats */
+.display-4 {
+    transition: color 0.3s ease;
+}
+
+.card:hover .display-4 {
+    color: #0d6efd !important;
+}
+</style>
 {% endblock %}

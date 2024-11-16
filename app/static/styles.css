@@ -1,15 +1,15 @@
-.navbar-nav {
-    margin-left: auto;
+/* At the top of your styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* Define font style for Arvo */
+.arvo-regular {
+    font-family: "Arvo", serif;
+    font-weight: 400;
+    font-style: normal;
 }
 
-.upload-link {
-    margin-right: auto;
-}
-
-.shadow {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
-}
-
-.dropdown-menu li a {
-    padding: 10px;
+/* You can also apply it globally or to specific elements */
+body {
+    font-family: "Arvo", serif;
+    font-weight: 400;
 }

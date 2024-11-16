@@ -267,3 +267,8 @@ def delete(file_id):
 
     # Redirect back to the dashboard
     return redirect(url_for('dashboard'))
+
+#add route for settings page
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    return render_template('settings.html')
