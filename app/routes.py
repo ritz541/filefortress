@@ -7,9 +7,6 @@ from app.functions import get_db, encrypt_file, decrypt_file
 from bson.objectid import ObjectId
 from datetime import datetime
 
-# file = request.files['file']
-# FILEPATH = filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
-# file.save(filepath)
 
 db = get_db()
 all_files_collection = db['all_files']
@@ -50,15 +47,12 @@ def register():
 def login():
     
     if 'username' in session:
-        # flash("You are already logged in", 'warning')
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         email = request.form.get('email')
-        # username = request.form.get('username')
         password = request.form.get('password')
         
-           
         user = users_collection.find_one({"email": email})
 
         if user:
@@ -102,7 +96,6 @@ def dashboard():
 
 # Pass these lists to the template
     return render_template('dashboard.html', encrypted_files=encrypted_files, decrypted_files=decrypted_files)
-
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():

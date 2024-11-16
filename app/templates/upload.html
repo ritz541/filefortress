@@ -1,18 +1,21 @@
 <!-- templates/upload.html -->
 {% extends "base.html" %}
 {% block content %}
-<div class="form-container">
-    <h2 class="text-center">Upload and Encrypt File</h2>
-    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="file" class="form-label">Choose File</label>
-            <input type="file" class="form-control" id="file" name="file" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Encryption Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Upload & Encrypt</button>
-    </form>
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <div class="form-container">
+        <h2 class="text-center">Upload and Encrypt File</h2>
+        <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="file" class="form-label">Choose File</label>
+                <input type="file" class="form-control" id="file" name="file" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Encryption Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Upload & Encrypt</button>
+        </form>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-warning w-100 btn-sm mt-3">Back to Dashboard</a>
+    </div>
 </div>
 {% endblock %}
