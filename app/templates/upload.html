@@ -1,287 +1,509 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="upload-page min-vh-100 d-flex justify-content-center align-items-center py-5" 
-     style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-5">
-                <div class="upload-container bg-white p-4 p-md-5 rounded-4 shadow-lg">
-                    <!-- Header Section -->
-                    <div class="text-center mb-4">
-                        <div class="display-6 mb-2">
-                            <i class="fas fa-lock text-primary"></i>
-                        </div>
-                        <h2 class="h3 mb-2">Upload & Encrypt</h2>
-                        <p class="text-muted">Secure your files with encryption</p>
-                    </div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload & Encrypt - Neubrutalism Style</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* Primary Colors */
+        --primary-color: #9b4d96;
+        --secondary-color: #9b4d96;
+        --accent-color: #9b4d96;
 
-                    <!-- Alert Messages -->
-                    {% if alert_message %}
-                    <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm" role="alert">
-                        <i class="fas fa-info-circle me-2"></i>
-                        {{ alert_message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
+        /* Background Colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f0f0f0;
 
-                    <!-- Upload Form -->
-                    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-                        <!-- File Upload Area -->
-                        <div class="upload-area mb-4 position-relative">
-                            <div class="border-2 border-dashed rounded-3 p-4 text-center upload-zone">
-                                <input type="file" class="form-control d-none" id="file" name="file" required>
-                                <label for="file" class="mb-0 cursor-pointer d-block">
-                                    <div class="upload-icon mb-3">
-                                        <i class="fas fa-cloud-upload-alt fa-3x text-primary opacity-75"></i>
-                                    </div>
-                                    <h5 class="fw-normal">Select file to encrypt</h5>
-                                    <p class="text-muted small mb-0">Click to browse or drop file here</p>
-                                </label>
-                            </div>
-                            <div id="selected-file" class="mt-2 text-center d-none">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-file-alt text-primary me-2"></i>
-                                    <span class="text-truncate selected-filename"></span>
-                                    <button type="button" class="btn btn-link text-danger p-0 ms-2" id="clear-file">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        /* Text Colors */
+        --text-primary: #2c363f;
+        --text-secondary: #666666;
 
-                        <!-- Password Input -->
-                        <div class="mb-4">
-                            <label for="password" class="form-label d-flex justify-content-between">
-                                <span>Encryption Password</span>
-                                <span class="text-muted small" id="password-strength"></span>
-                            </label>
-                            <div class="input-group">
-                                <input 
-                                    type="password" 
-                                    class="form-control border-end-0" 
-                                    id="password" 
-                                    name="password" 
-                                    required 
-                                    value="{{ request.form.password if request.form else '' }}"
-                                    placeholder="Create a strong password"
-                                >
-                                <button class="btn btn-outline-secondary border border-start-0" type="button" id="toggle-password">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <div class="progress mt-2" style="height: 4px;">
-                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-                            </div>
-                            <div class="form-text">Use at least 8 characters with letters and numbers</div>
-                        </div>
+        /* Border Colors */
+        --border-color: #000000;
 
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3 position-relative overflow-hidden">
-                            <span class="d-flex align-items-center justify-content-center">
-                                <i class="fas fa-lock me-2"></i>
-                                <span>Upload & Encrypt</span>
-                            </span>
-                        </button>
+        /* Shadow Color */
+        --shadow-color: rgba(0, 0, 0, 0.85);
 
-                        <!-- Back Button -->
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-light w-100">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                        </a>
-                    </form>
-                </div>
-            </div>
+        /* Password Strength Colors */
+        --strength-weak: #ff4136;
+        --strength-fair: #ffdc00;
+        --strength-good: #2ecc40;
+        --strength-strong: #0074d9;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+      }
+
+      .upload-container {
+        background: var(--bg-primary);
+        border: 3px solid var(--border-color);
+        border-radius: 8px;
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 600px;
+        position: relative;
+        transform: translate(-4px, -4px);
+        transition: transform 0.2s ease;
+        box-shadow: 8px 8px 0 var(--shadow-color);
+      }
+
+      .upload-container:hover {
+        transform: translate(-6px, -6px);
+        box-shadow: 10px 10px 0 var(--shadow-color);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+      }
+
+      .header h2 {
+        font-size: 2.5rem;
+        margin: 1rem 0;
+        font-weight: 800;
+      }
+
+      .header i {
+        font-size: 3rem;
+        color: var(--primary-color);
+      }
+
+      .header p {
+        color: var(--text-secondary);
+      }
+
+      .upload-zone {
+        border: 3px dashed var(--border-color);
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        margin-bottom: 1.5rem;
+        background: var(--bg-secondary);
+        transition: all 0.3s ease;
+        border-radius: 8px;
+      }
+
+      .upload-zone:hover {
+        background: var(--accent-color);
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+      }
+
+      .upload-zone i {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .selected-file {
+        background: var(--secondary-color);
+        padding: 0.75rem;
+        border-radius: 4px;
+        border: 2px solid var(--border-color);
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .password-group {
+        margin-bottom: 2rem;
+      }
+
+      .password-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .password-header label {
+        font-weight: bold;
+      }
+
+      .strength-meter {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      .password-input {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .password-input input {
+        flex: 1;
+        padding: 1rem;
+        border: 3px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      .password-input button {
+        padding: 0.5rem 1rem;
+        background: var(--accent-color);
+        border: 3px solid var(--border-color);
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .password-input button:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+      }
+
+      .strength-bar {
+        height: 8px;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .strength-progress {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+        background: var(--strength-weak);
+      }
+
+      .password-hint {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border: 3px solid var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .btn-secondary {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+      }
+
+      .btn:hover {
+        transform: translate(-4px, -4px);
+        box-shadow: 6px 6px 0 var(--shadow-color);
+      }
+
+      .alert {
+        background: var(--accent-color);
+        padding: 1rem;
+        border: 3px solid var(--border-color);
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .alert button {
+        margin-left: auto;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+
+      @media (max-width: 640px) {
+        .upload-container {
+          padding: 1.5rem;
+        }
+
+        .header h2 {
+          font-size: 2rem;
+        }
+      }
+
+      .d-none {
+        display: none !important;
+      }
+
+      /* Loading animation */
+      @keyframes loading {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      .btn-loading {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-loading::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        animation: loading 1.5s infinite;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="upload-container">
+      <!-- Header Section -->
+      <div class="header">
+        <i class="fas fa-lock"></i>
+        <h2>Upload & Encrypt</h2>
+        <p>Secure your files with encryption</p>
+      </div>
+
+      <!-- Alert Messages -->
+      {% if alert_message %}
+      <div class="alert" role="alert">
+        <i class="fas fa-info-circle"></i>
+        {{ alert_message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Upload Form -->
+      <form
+        action="{{ url_for('upload') }}"
+        method="POST"
+        enctype="multipart/form-data"
+        class="needs-validation"
+        novalidate
+      >
+        <!-- File Upload Area -->
+        <div class="upload-area">
+          <div class="upload-zone">
+            <input type="file" class="d-none" id="file" name="file" required />
+            <label for="file">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <h3>Select file to encrypt</h3>
+              <p>Click to browse or drop file here</p>
+            </label>
+          </div>
+          <div id="selected-file" class="selected-file d-none">
+            <i class="fas fa-file-alt"></i>
+            <span class="selected-filename"></span>
+            <button type="button" id="clear-file">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
         </div>
+
+        <!-- Password Input -->
+        <div class="password-group">
+          <div class="password-header">
+            <label for="password">Encryption Password</label>
+            <span class="strength-meter" id="password-strength"></span>
+          </div>
+          <div class="password-input">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              value="{{ request.form.password if request.form else '' }}"
+              placeholder="Create a strong password"
+            />
+            <button type="button" id="toggle-password">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="strength-bar">
+            <div class="strength-progress"></div>
+          </div>
+          <div class="password-hint">
+            Use at least 8 characters with letters and numbers
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-lock"></i>
+          <span>Upload & Encrypt</span>
+        </button>
+
+        <!-- Back Button -->
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back to Dashboard</span>
+        </a>
+      </form>
     </div>
-</div>
 
-<style>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // File upload handling
+        const fileInput = document.getElementById("file");
+        const selectedFile = document.getElementById("selected-file");
+        const clearFile = document.getElementById("clear-file");
+        const uploadZone = document.querySelector(".upload-zone");
 
-
-    @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-
-body {
-    font-family: "Arvo", serif;
-    font-weight: 400;
-}
-
-.upload-page {
-    background-attachment: fixed;
-}
-
-.upload-container {
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.border-dashed {
-    border-style: dashed !important;
-    border-color: #dee2e6 !important;
-}
-
-.upload-zone {
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.upload-zone:hover {
-    border-color: #0d6efd !important;
-    background-color: #f8f9fa;
-}
-
-.cursor-pointer {
-    cursor: pointer;
-}
-
-.btn {
-    transition: all 0.3s ease;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-}
-
-.selected-filename {
-    max-width: 200px;
-}
-
-/* Loading animation for upload button */
-.btn-loading::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // File upload handling
-    const fileInput = document.getElementById('file');
-    const selectedFile = document.getElementById('selected-file');
-    const clearFile = document.getElementById('clear-file');
-    const uploadZone = document.querySelector('.upload-zone');
-    
-    function handleFileSelect(file) {
-        if (file) {
-            selectedFile.classList.remove('d-none');
-            selectedFile.querySelector('.selected-filename').textContent = file.name;
-            uploadZone.style.borderColor = '#0d6efd';
-        } else {
-            selectedFile.classList.add('d-none');
-            fileInput.value = '';
-            uploadZone.style.borderColor = '';
-        }
-    }
-
-    fileInput.addEventListener('change', function() {
-        handleFileSelect(this.files[0]);
-    });
-
-    clearFile.addEventListener('click', function() {
-        handleFileSelect(null);
-    });
-
-    // Drag and drop handling
-    uploadZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '#0d6efd';
-        this.style.backgroundColor = '#f8f9fa';
-    });
-
-    uploadZone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '';
-        this.style.backgroundColor = '';
-    });
-
-    uploadZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '';
-        this.style.backgroundColor = '';
-        
-        const file = e.dataTransfer.files[0];
-        fileInput.files = e.dataTransfer.files;
-        handleFileSelect(file);
-    });
-
-    // Password strength meter
-    const password = document.getElementById('password');
-    const strengthMeter = document.getElementById('password-strength');
-    const progressBar = document.querySelector('.progress-bar');
-
-    password.addEventListener('input', function() {
-        const strength = calculatePasswordStrength(this.value);
-        updatePasswordStrength(strength);
-    });
-
-    function calculatePasswordStrength(password) {
-        let strength = 0;
-        if (password.length >= 8) strength += 25;
-        if (password.match(/[a-z]+/)) strength += 25;
-        if (password.match(/[A-Z]+/)) strength += 25;
-        if (password.match(/[0-9]+/)) strength += 25;
-        return strength;
-    }
-
-    function updatePasswordStrength(strength) {
-        let status = '';
-        let color = '';
-        
-        if (strength === 0) {
-            status = '';
-            color = '#dc3545';
-        } else if (strength <= 25) {
-            status = 'Weak';
-            color = '#dc3545';
-        } else if (strength <= 50) {
-            status = 'Fair';
-            color = '#ffc107';
-        } else if (strength <= 75) {
-            status = 'Good';
-            color = '#0dcaf0';
-        } else {
-            status = 'Strong';
-            color = '#198754';
+        function handleFileSelect(file) {
+          if (file) {
+            selectedFile.classList.remove("d-none");
+            selectedFile.querySelector(".selected-filename").textContent =
+              file.name;
+            uploadZone.style.background = "var(--accent-color)";
+          } else {
+            selectedFile.classList.add("d-none");
+            fileInput.value = "";
+            uploadZone.style.background = "var(--bg-secondary)";
+          }
         }
 
-        strengthMeter.textContent = status;
-        progressBar.style.width = strength + '%';
-        progressBar.style.backgroundColor = color;
-    }
+        fileInput.addEventListener("change", function () {
+          handleFileSelect(this.files[0]);
+        });
 
-    // Password toggle
-    const togglePassword = document.getElementById('toggle-password');
-    
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
+        clearFile.addEventListener("click", function () {
+          handleFileSelect(null);
+        });
 
-    // Form submission loading state
-    const form = document.querySelector('form');
-    const submitBtn = form.querySelector('button[type="submit"]');
+        // Drag and drop handling
+        uploadZone.addEventListener("dragover", function (e) {
+          e.preventDefault();
+          this.style.background = "var(--accent-color)";
+        });
 
-    form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
+        uploadZone.addEventListener("dragleave", function (e) {
+          e.preventDefault();
+          this.style.background = "var(--bg-secondary)";
+        });
+
+        uploadZone.addEventListener("drop", function (e) {
+          e.preventDefault();
+          this.style.background = "var(--bg-secondary)";
+
+          const file = e.dataTransfer.files[0];
+          fileInput.files = e.dataTransfer.files;
+          handleFileSelect(file);
+        });
+
+        // Password strength meter
+        const password = document.getElementById("password");
+        const strengthMeter = document.getElementById("password-strength");
+        const strengthProgress = document.querySelector(".strength-progress");
+
+        function calculatePasswordStrength(password) {
+          let strength = 0;
+          if (password.length >= 8) strength += 25;
+          if (password.match(/[a-z]+/)) strength += 25;
+          if (password.match(/[A-Z]+/)) strength += 25;
+          if (password.match(/[0-9]+/)) strength += 25;
+          return strength;
+        }
+
+        function updatePasswordStrength(strength) {
+          let status = "";
+          let color = "";
+
+          if (strength === 0) {
+            status = "";
+            color = "var(--strength-weak)";
+          } else if (strength <= 25) {
+            status = "Weak";
+            color = "var(--strength-weak)";
+          } else if (strength <= 50) {
+            status = "Fair";
+            color = "var(--strength-fair)";
+          } else if (strength <= 75) {
+            status = "Good";
+            color = "var(--strength-good)";
+          } else {
+            status = "Strong";
+            color = "var(--strength-strong)";
+          }
+
+          strengthMeter.textContent = status;
+          strengthProgress.style.width = strength + "%";
+          strengthProgress.style.backgroundColor = color;
+        }
+
+        password.addEventListener("input", function () {
+          const strength = calculatePasswordStrength(this.value);
+          updatePasswordStrength(strength);
+        });
+
+        // Password toggle
+        const togglePassword = document.getElementById("toggle-password");
+
+        togglePassword.addEventListener("click", function () {
+          const type =
+            password.getAttribute("type") === "password" ? "text" : "password";
+          password.setAttribute("type", type);
+          this.querySelector("i").classList.toggle("fa-eye");
+          this.querySelector("i").classList.toggle("fa-eye-slash");
+        });
+
+        // Form submission loading state
+        const form = document.querySelector("form");
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        form.addEventListener("submit", function (event) {
+          if (!form.checkValidity()) {
             event.preventDefault();
             event.stopPropagation();
-        } else {
-            submitBtn.classList.add('btn-loading');
+          } else {
+            submitBtn.classList.add("btn-loading");
             submitBtn.disabled = true;
-        }
-        form.classList.add('was-validated');
-    });
-});
-</script>
-{% endblock %}
+          }
+          form.classList.add("was-validated");
+        });
+      });
+    </script>
+  </body>
+</html>

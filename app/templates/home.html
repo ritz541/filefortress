@@ -1,339 +1,614 @@
-{% extends "base.html" %} {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureVault - Neubrutalism</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap");
 
-<nav class="navbar navbar-expand-lg navbar-light sticky-top py-4">
-  <div class="container">
-    <!-- Brand -->
-    <a
-      class="navbar-brand d-flex align-items-center"
-      href="{{ url_for('home') }}"
-    >
-      <div
-        class="brand-icon rounded-circle bg-primary d-flex align-items-center justify-content-center me-2"
-      >
-        <i class="bi bi-shield-lock text-white"></i>
-      </div>
-      <span class="fw-bold">SecureVault</span>
-    </a>
+      :root {
+        /* Main colors - easily customizable */
+        --primary: #9b4d96; /* Purple */
+        --secondary: #b6b6b6; /* Light Grey */
+        --accent: #e8c9f1; /* Lavender */
+        --background: #ffeeee;
+        --text: #1a1a1a;
+        --white: #ffffff;
 
-    <!-- Mobile Toggle -->
-    <button
-      class="navbar-toggler border-0 shadow-none"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      <i class="bi bi-list fs-4"></i>
-    </button>
+        /* Functional colors */
+        --success: #00ca9e;
+        --warning: #ffb800;
+        --shadow-color: #1a1a1a;
 
-    <!-- Navigation Items -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item">
-          <a
-            class="nav-link px-3 d-flex align-items-center"
-            href="{{ url_for('home') }}"
-          >
-            <i class="bi bi-house me-2"></i>
-            Home
-          </a>
-        </li>
+        /* Spacing */
+        --space-xs: 0.25rem;
+        --space-sm: 0.5rem;
+        --space-md: 1rem;
+        --space-lg: 2rem;
+        --space-xl: 4rem;
+      }
 
-        {% if 'username' in session %}
-        <li class="nav-item">
-          <a
-            class="nav-link px-3 d-flex align-items-center"
-            href="{{ url_for('upload') }}"
-          >
-            <i class="bi bi-cloud-upload me-2"></i>
-            Upload
-          </a>
-        </li>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        <li class="nav-item">
-          <a
-            class="nav-link px-3 d-flex align-items-center"
-            href="{{ url_for('decrypt') }}"
-          >
-            <i class="bi bi-unlock me-2"></i>
-            Decrypt
-          </a>
-        </li>
+      body {
+        font-family: "Space Grotesk", sans-serif;
+        background-color: var(--background);
+        color: var(--text);
+        line-height: 1.6;
+      }
 
-        <!-- User Menu Dropdown -->
-        <li class="nav-item dropdown ms-2">
-          <a
-            class="nav-link dropdown-toggle d-flex align-items-center user-menu"
-            href="#"
-            id="userDropdown"
-            role="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <div
-              class="user-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
-            >
-              <i class="bi bi-person-fill text-white"></i>
-            </div>
-            <span>{{ session['username'] }}</span>
-          </a>
-          <ul
-            class="dropdown-menu dropdown-menu-end shadow border-0"
-            aria-labelledby="userDropdown"
-          >
-            <li>
-              <span class="dropdown-item-text">
-                <small class="text-muted">Signed in as</small><br />
-                <strong>{{ session['username'] }}</strong>
-              </span>
-            </li>
-            <li><hr class="dropdown-divider" /></li>
-            <li>
-              <a
-                class="dropdown-item d-flex align-items-center"
-                href="{{ url_for('logout') }}"
-              >
-                <i class="bi bi-box-arrow-right me-2"></i>
-                Sign Out
+      .neu-shadow {
+        box-shadow: 4px 4px 0 var(--shadow-color);
+        border: 3px solid var(--shadow-color);
+      }
+
+      .neu-button {
+        padding: var(--space-sm) var(--space-md);
+        background: var(--white);
+        border: 3px solid var(--shadow-color);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+        text-decoration: none;
+        color: var(--text);
+        display: inline-block;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .neu-button:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0 var(--shadow-color);
+      }
+
+      .neu-button:active {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 var(--shadow-color);
+      }
+
+      .neu-button.primary {
+        background: var(--primary);
+        color: var(--white);
+      }
+
+      .neu-button.secondary {
+        background: var(--secondary);
+      }
+
+      .neu-button.accent {
+        background: var(--accent);
+      }
+
+      /* Navbar */
+      .navbar {
+        background: var(--white);
+        padding: var(--space-md);
+        margin-bottom: var(--space-lg);
+        border-bottom: 3px solid var(--shadow-color);
+      }
+
+      .navbar-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .navbar-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 700;
+        font-size: 1.5rem;
+      }
+
+      .brand-icon {
+        background: var(--primary);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: var(--space-sm);
+        color: var(--white);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: var(--space-md);
+        align-items: center;
+        list-style: none;
+      }
+
+      .nav-link {
+        text-decoration: none;
+        color: var(--text);
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      /* Hero Section */
+      .hero {
+        background: var(--primary);
+        padding: var(--space-xl) 0;
+        margin-bottom: var(--space-xl);
+        border-bottom: 3px solid var(--shadow-color);
+      }
+
+      .hero-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--space-md);
+      }
+
+      .hero-content {
+        max-width: 600px;
+      }
+
+      .hero-title {
+        font-size: 4rem;
+        line-height: 1.1;
+        margin-bottom: var(--space-md);
+        color: var(--white);
+      }
+
+      .hero-text {
+        font-size: 1.25rem;
+        margin-bottom: var(--space-lg);
+        color: var(--white);
+      }
+
+      /* Stats Section */
+      .stats {
+        background: var(--white);
+        padding: var(--space-xl) 0;
+        margin-bottom: var(--space-xl);
+      }
+
+      .stats-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--space-lg);
+        padding: 0 var(--space-md);
+      }
+
+      .stat-card {
+        background: var(--accent);
+        padding: var(--space-lg);
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: var(--space-xs);
+      }
+
+      /* Features Section */
+      .features {
+        padding: var(--space-xl) 0;
+      }
+
+      .features-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--space-md);
+      }
+
+      .features-title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: var(--space-xl);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--space-lg);
+      }
+
+      .feature-card {
+        background: var(--white);
+        padding: var(--space-lg);
+        text-align: center;
+      }
+
+      .feature-icon {
+        background: var(--primary);
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-md);
+        color: var(--white);
+        font-size: 1.5rem;
+      }
+
+      /* CTA Section */
+      .cta {
+        background: var(--secondary);
+        padding: var(--space-xl) 0;
+        margin: var(--space-xl) 0;
+        border-top: 3px solid var(--shadow-color);
+        border-bottom: 3px solid var(--shadow-color);
+      }
+
+      .cta-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 0 var(--space-md);
+      }
+
+      /* Quick Actions */
+      .quick-actions {
+        padding: var(--space-xl) 0;
+      }
+
+      .quick-actions-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--space-lg);
+        padding: 0 var(--space-md);
+      }
+
+      .action-card {
+        background: var(--white);
+        padding: var(--space-lg);
+        text-align: center;
+      }
+
+      /* Footer */
+      .footer {
+        background: var(--white);
+        padding: var(--space-lg) 0;
+        border-top: 3px solid var(--shadow-color);
+        text-align: center;
+      }
+
+      .footer a {
+        color: var(--primary);
+        text-decoration: none;
+        margin: 0 var(--space-sm);
+      }
+
+      /* Dropdown Menu */
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background: var(--white);
+        min-width: 200px;
+        z-index: 1;
+        padding: var(--space-sm);
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      /* Mobile Menu */
+      .mobile-menu-button {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+
+      @media (max-width: 768px) {
+        .mobile-menu-button {
+          display: block;
+        }
+
+        .nav-links {
+          display: none;
+          width: 100%;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          background: var(--white);
+          padding: var(--space-md);
+          flex-direction: column;
+          border-top: 3px solid var(--shadow-color);
+        }
+
+        .nav-links.active {
+          display: flex;
+        }
+
+        .navbar-container {
+          flex-wrap: wrap;
+        }
+
+        .hero-title {
+          font-size: 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar neu-shadow">
+      <div class="navbar-container">
+        <a href="{{ url_for('home') }}" class="navbar-brand">
+          <div class="brand-icon neu-shadow">
+            <i class="bi bi-shield-lock"></i>
+          </div>
+          SecureVault
+        </a>
+
+        <button class="mobile-menu-button">
+          <i class="bi bi-list"></i>
+        </button>
+
+        <ul class="nav-links">
+          <li>
+            <a href="{{ url_for('dashboard') }}" class="nav-link neu-button">
+              <i class="bi bi-grid"></i> Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('group_chat') }}" class="nav-link neu-button">
+              <i class="bi bi-chat-left"></i> Group Chat
+            </a>
+          </li>
+
+          {% if 'username' in session %}
+          <li>
+            <a href="{{ url_for('upload') }}" class="nav-link neu-button">
+              <i class="bi bi-cloud-upload"></i> Upload
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('decrypt') }}" class="nav-link neu-button">
+              <i class="bi bi-unlock"></i> Decrypt
+            </a>
+          </li>
+          <li class="dropdown">
+            <button class="neu-button">
+              <i class="bi bi-person-fill"></i>
+              {{ session['username'] }}
+            </button>
+            <div class="dropdown-content neu-shadow">
+              <p class="dropdown-text">
+                Signed in as<br /><strong>{{ session['username'] }}</strong>
+              </p>
+              <hr />
+              <a href="{{ url_for('logout') }}" class="neu-button">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
               </a>
-            </li>
-          </ul>
-        </li>
-
-        {% else %}
-        <li class="nav-item">
-          <a class="nav-link px-3" href="{{ url_for('login') }}">
-            <button class="btn btn-outline-primary btn-sm px-3">Sign In</button>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link px-3" href="{{ url_for('register') }}">
-            <button class="btn btn-primary btn-sm px-3">Register</button>
-          </a>
-        </li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-</nav>
-
-<!-- Hero Section -->
-<div class="hero-section bg-gradient-primary text-white py-5">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-6 mb-5 mb-lg-0">
-        <h1 class="display-3 fw-bold mb-4">Secure File Storage</h1>
-        <p class="lead mb-4">
-          Your files, your privacy, our priority. Enterprise-grade encryption
-          keeping your data safe and accessible anywhere.
-        </p>
-        <div class="d-grid gap-3 d-sm-flex">
-          <a
-            href="{{ url_for('register') }}"
-            class="btn btn-light btn-lg px-4 py-2"
-            >Get Started Free</a
-          >
-          <a href="#features" class="btn btn-outline-light btn-lg px-4 py-2"
-            >Learn More</a
-          >
-        </div>
+            </div>
+          </li>
+          {% else %}
+          <li>
+            <a href="{{ url_for('login') }}" class="neu-button">Sign In</a>
+          </li>
+          <li>
+            <a href="{{ url_for('register') }}" class="neu-button primary"
+              >Register</a
+            >
+          </li>
+          {% endif %}
+        </ul>
       </div>
-    </div>
-  </div>
-</div>
+    </nav>
 
-<!-- Stats Section -->
-<div class="bg-light py-5">
-  <div class="container">
-    <div class="row g-4 text-center">
-      <div class="col-md-4">
-        <div class="card border-0 bg-transparent">
-          <div class="card-body">
-            <h2 class="display-4 text-primary fw-bold">100K+</h2>
-            <p class="text-muted">Active Users</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card border-0 bg-transparent">
-          <div class="card-body">
-            <h2 class="display-4 text-primary fw-bold">99.9%</h2>
-            <p class="text-muted">Uptime</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card border-0 bg-transparent">
-          <div class="card-body">
-            <h2 class="display-4 text-primary fw-bold">256-bit</h2>
-            <p class="text-muted">Encryption</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Features Section -->
-<div id="features" class="container py-5">
-  <h2 class="text-center mb-5">Why Choose Us?</h2>
-  <div class="row g-4">
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm hover-card">
-        <div class="card-body text-center">
-          <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-            <i class="bi bi-shield-lock fs-4"></i>
-          </div>
-          <h5 class="card-title">End-to-End Encryption</h5>
-          <p class="card-text text-muted">
-            Your files are encrypted before they leave your device, ensuring
-            maximum security.
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-container">
+        <div class="hero-content">
+          <h1 class="hero-title neu-shadow">Secure File Storage</h1>
+          <p class="hero-text">
+            Your files, your privacy, our priority. Enterprise-grade encryption
+            keeping your data safe and accessible anywhere.
           </p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm hover-card">
-        <div class="card-body text-center">
-          <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-            <i class="bi bi-cloud-upload fs-4"></i>
+          <div style="display: flex; gap: var(--space-md)">
+            <a href="{{ url_for('register') }}" class="neu-button primary"
+              >Get Started Free</a
+            >
+            <a href="#features" class="neu-button">Learn More</a>
           </div>
-          <h5 class="card-title">Easy File Management</h5>
-          <p class="card-text text-muted">
-            Upload, organize, and access your files from anywhere with our
-            intuitive interface.
-          </p>
         </div>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm hover-card">
-        <div class="card-body text-center">
-          <div class="feature-icon bg-primary text-white rounded-circle mb-3">
-            <i class="bi bi-share fs-4"></i>
-          </div>
-          <h5 class="card-title">Secure Sharing</h5>
-          <p class="card-text text-muted">
-            Share files securely with team members while maintaining full
-            control.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    </section>
 
-<!-- CTA Section -->
-<div class="bg-primary text-white py-5">
-  <div class="container">
-    <div class="row justify-content-center text-center">
-      <div class="col-lg-8">
-        <h2 class="mb-4">Ready to get started?</h2>
-        <p class="lead mb-4">
+    <!-- Stats Section -->
+    <section class="stats">
+      <div class="stats-container">
+        <div class="stat-card neu-shadow">
+          <h2 class="stat-number">100K+</h2>
+          <p>Active Users</p>
+        </div>
+        <div class="stat-card neu-shadow">
+          <h2 class="stat-number">99.9%</h2>
+          <p>Uptime</p>
+        </div>
+        <div class="stat-card neu-shadow">
+          <h2 class="stat-number">256-bit</h2>
+          <p>Encryption</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="features-container">
+        <h2 class="features-title">Why Choose Us?</h2>
+        <div class="features-grid">
+          <div class="feature-card neu-shadow">
+            <div class="feature-icon neu-shadow">
+              <i class="bi bi-shield-lock"></i>
+            </div>
+            <h3>End-to-End Encryption</h3>
+            <p>
+              Your files are encrypted before they leave your device, ensuring
+              maximum security.
+            </p>
+          </div>
+          <div class="feature-card neu-shadow">
+            <div class="feature-icon neu-shadow">
+              <i class="bi bi-cloud-upload"></i>
+            </div>
+            <h3>Easy File Management</h3>
+            <p>
+              Upload, organize, and access your files from anywhere with our
+              intuitive interface.
+            </p>
+          </div>
+          <div class="feature-card neu-shadow">
+            <div class="feature-icon neu-shadow">
+              <i class="bi bi-share"></i>
+            </div>
+            <h3>Secure Sharing</h3>
+            <p>
+              Share files securely with team members while maintaining full
+              control.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+      <div class="cta-container">
+        <h2>Ready to get started?</h2>
+        <p class="lead">
           Join thousands of users who trust us with their data security.
         </p>
-        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-          <a
-            href="{{ url_for('register') }}"
-            class="btn btn-light btn-lg px-4 py-2"
+        <div
+          style="
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            margin-top: var(--space-lg);
+          "
+        >
+          <a href="{{ url_for('register') }}" class="neu-button primary"
             >Create Free Account</a
           >
-          <a
-            href="{{ url_for('login') }}"
-            class="btn btn-outline-light btn-lg px-4 py-2"
-            >Sign In</a
-          >
+          <a href="{{ url_for('login') }}" class="neu-button">Sign In</a>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Quick Actions -->
-<div class="container py-5">
-  <div class="row justify-content-center g-4">
-    <div class="col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title mb-3">Quick Upload</h5>
-          <p class="card-text text-muted mb-4">
-            Securely upload and encrypt your files in seconds.
-          </p>
-          <a href="{{ url_for('upload') }}" class="btn btn-success w-100">
-            <i class="bi bi-cloud-upload me-2"></i>Upload File
+    </section>
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+      <div class="quick-actions-container">
+        <div class="action-card neu-shadow">
+          <h3>Quick Upload</h3>
+          <p>Securely upload and encrypt your files in seconds.</p>
+          <a href="{{ url_for('upload') }}" class="neu-button accent">
+            <i class="bi bi-cloud-upload"></i> Upload File
+          </a>
+        </div>
+        <div class="action-card neu-shadow">
+          <h3>File Decryption</h3>
+          <p>Access your encrypted files with secure decryption.</p>
+          <a href="{{ url_for('decrypt') }}" class="neu-button secondary">
+            <i class="bi bi-unlock"></i> Decrypt File
           </a>
         </div>
       </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title mb-3">File Decryption</h5>
-          <p class="card-text text-muted mb-4">
-            Access your encrypted files with secure decryption.
-          </p>
-          <a href="{{ url_for('decrypt') }}" class="btn btn-warning w-100">
-            <i class="bi bi-unlock me-2"></i>Decrypt File
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    </section>
 
-<!-- Footer -->
-<footer class="bg-light py-4">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-8 text-center">
-        <p class="text-muted mb-0">
-          Need help? <a href="#" class="text-primary">Contact Support</a> |
-          <a href="#" class="text-primary">Privacy Policy</a> |
-          <a href="#" class="text-primary">Terms of Service</a>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>
+          Need help? <a href="#" class="neu-button">Contact Support</a>
+          <a href="#" class="neu-button">Privacy Policy</a>
+          <a href="#" class="neu-button">Terms of Service</a>
         </p>
       </div>
-    </div>
-  </div>
-</footer>
+    </footer>
 
-<style>
-  @import url("https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+    <script>
+      // Mobile menu functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const mobileMenuButton = document.querySelector(".mobile-menu-button");
+        const navLinks = document.querySelector(".nav-links");
 
-  body {
-    font-family: "Arvo", serif;
-    font-weight: 400;
-  }
+        mobileMenuButton.addEventListener("click", function () {
+          navLinks.classList.toggle("active");
+        });
 
-  .bg-gradient-primary {
-    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-  }
+        // Close mobile menu when clicking outside
+        document.addEventListener("click", function (event) {
+          const isClickInsideNav =
+            navLinks.contains(event.target) ||
+            mobileMenuButton.contains(event.target);
+          if (!isClickInsideNav && navLinks.classList.contains("active")) {
+            navLinks.classList.remove("active");
+          }
+        });
 
-  .feature-icon {
-    width: 60px;
-    height: 60px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-  }
+        // Handle window resize
+        window.addEventListener("resize", function () {
+          if (window.innerWidth > 768) {
+            navLinks.classList.remove("active");
+          }
+        });
+      });
 
-  .hover-card {
-    transition: transform 0.3s ease;
-  }
+      // Add hover effect for stat cards
+      document.querySelectorAll(".stat-card").forEach((card) => {
+        card.addEventListener("mouseover", function () {
+          this.style.transform = "translate(-4px, -4px)";
+          this.style.boxShadow = "8px 8px 0 var(--shadow-color)";
+        });
 
-  .hover-card:hover {
-    transform: translateY(-5px);
-  }
+        card.addEventListener("mouseout", function () {
+          this.style.transform = "translate(0, 0)";
+          this.style.boxShadow = "4px 4px 0 var(--shadow-color)";
+        });
+      });
 
-  /* Add some animation to stats */
-  .display-4 {
-    transition: color 0.3s ease;
-  }
+      // Add hover effect for feature cards
+      document.querySelectorAll(".feature-card").forEach((card) => {
+        card.addEventListener("mouseover", function () {
+          this.style.transform = "translate(-4px, -4px)";
+          this.style.boxShadow = "8px 8px 0 var(--shadow-color)";
+        });
 
-  .card:hover .display-4 {
-    color: #0d6efd !important;
-  }
-</style>
-{% endblock %}
+        card.addEventListener("mouseout", function () {
+          this.style.transform = "translate(0, 0)";
+          this.style.boxShadow = "4px 4px 0 var(--shadow-color)";
+        });
+      });
+
+      // Add hover effect for action cards
+      document.querySelectorAll(".action-card").forEach((card) => {
+        card.addEventListener("mouseover", function () {
+          this.style.transform = "translate(-4px, -4px)";
+          this.style.boxShadow = "8px 8px 0 var(--shadow-color)";
+        });
+
+        card.addEventListener("mouseout", function () {
+          this.style.transform = "translate(0, 0)";
+          this.style.boxShadow = "4px 4px 0 var(--shadow-color)";
+        });
+      });
+    </script>
+  </body>
+</html>

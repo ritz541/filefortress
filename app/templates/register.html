@@ -1,286 +1,353 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureVault - Register</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* Base colors - easily changeable */
+        --primary: #9b4d96; /* Purple */
+        --secondary: #b6b6b6; /* Light Grey */
+        --accent: #e8c9f1; /* Lavender */
+        --background: #f7f7f7;
+        --text: #2c363f;
+        --shadow-color: #2c363f;
 
-<nav class="navbar navbar-expand-lg navbar-light sticky-top">
-    <div class="container">
-        <!-- Brand -->
-        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
-            <div class="brand-icon rounded-circle bg-primary d-flex align-items-center justify-content-center me-2">
-                <i class="bi bi-shield-lock text-white"></i>
-            </div>
-            <span class="fw-bold">SecureVault</span>
-        </a>
+        /* Functional colors */
+        --nav-bg: var(--background);
+        --button-bg: var(--primary);
+        --input-bg: #ffffff;
+        --card-bg: #ffffff;
+      }
 
-        <!-- Mobile Toggle -->
-        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="bi bi-list fs-4"></i>
-        </button>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+      }
 
-        <!-- Navigation Items -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item">
-                    <a class="nav-link px-3 d-flex align-items-center" href="{{ url_for('home') }}">
-                        <i class="bi bi-house me-2"></i>
-                        Home
-                    </a>
-                </li>
+      body {
+        background-color: var(--background);
+        color: var(--text);
+      }
 
-                {% if 'username' in session %}
-                <li class="nav-item">
-                    <a class="nav-link px-3 d-flex align-items-center" href="{{ url_for('upload') }}">
-                        <i class="bi bi-cloud-upload me-2"></i>
-                        Upload
-                    </a>
-                </li>
+      /* Neubrutalism Navigation */
+      .nav {
+        background: var(--nav-bg);
+        padding: 1rem;
+        border-bottom: 3px solid var(--shadow-color);
+      }
 
-                <li class="nav-item">
-                    <a class="nav-link px-3 d-flex align-items-center" href="{{ url_for('decrypt') }}">
-                        <i class="bi bi-unlock me-2"></i>
-                        Decrypt
-                    </a>
-                </li>
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-                <!-- User Menu Dropdown -->
-                <li class="nav-item dropdown ms-2">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center user-menu" href="#" id="userDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="user-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
-                            <i class="bi bi-person-fill text-white"></i>
-                        </div>
-                        <span>{{ session['username'] }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
-                        <li>
-                            <span class="dropdown-item-text">
-                                <small class="text-muted">Signed in as</small><br>
-                                <strong>{{ session['username'] }}</strong>
-                            </span>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="{{ url_for('logout') }}">
-                                <i class="bi bi-box-arrow-right me-2"></i>
-                                Sign Out
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: bold;
+        font-size: 1.5rem;
+      }
 
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="{{ url_for('login') }}">
-                        <button class="btn btn-outline-primary btn-sm px-3">Sign In</button>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="{{ url_for('register') }}">
-                        <button class="btn btn-primary btn-sm px-3">Register</button>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-</nav>
+      .brand-icon {
+        background: var(--primary);
+        padding: 0.5rem;
+        border: 3px solid var(--shadow-color);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+      }
 
-<div class="register-page d-flex justify-content-center align-items-center min-vh-100">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-5 col-lg-5">
-                <div class="card border-0 shadow-lg">
-                    <div class="card-body p-5">
-                        <!-- Logo or Icon -->
-                        <div class="text-center mb-4">
-                            <div class="brand-icon rounded-circle bg-primary d-inline-flex align-items-center justify-content-center">
-                                <i class="bi bi-person-plus text-white fs-3"></i>
-                            </div>
-                        </div>
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
 
-                        <!-- Alert Message -->
-                        {% if alert_message %}
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            {{ alert_message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        {% endif %}
+      /* Main Content */
+      .register-container {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
 
-                        <h2 class="text-center mb-4 fw-bold">Create Account</h2>
-                        
-                        <!-- Registration Form -->
-                        <form action="{{ url_for('register') }}" method="POST">
-                            <!-- Email Field -->
-                            <div class="mb-4">
-                                <label for="email" class="form-label text-muted">Email Address</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="bi bi-envelope text-muted"></i>
-                                    </span>
-                                    <input 
-                                        type="email" 
-                                        class="form-control border-start-0 ps-0" 
-                                        id="email" 
-                                        name="email" 
-                                        placeholder="name@example.com"
-                                        required 
-                                        value="{{ request.form.email if request.form else '' }}">
-                                </div>
-                            </div>
+      .register-card {
+        background: var(--card-bg);
+        padding: 2rem;
+        border: 3px solid var(--shadow-color);
+        box-shadow: 8px 8px 0 var(--shadow-color);
+        width: 100%;
+        max-width: 480px;
+      }
 
-                            <!-- Username Field -->
-                            <div class="mb-4">
-                                <label for="username" class="form-label text-muted">Username</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="bi bi-person text-muted"></i>
-                                    </span>
-                                    <input 
-                                        type="text" 
-                                        class="form-control border-start-0 ps-0" 
-                                        id="username" 
-                                        name="username" 
-                                        placeholder="Choose a username"
-                                        required 
-                                        value="{{ request.form.username if request.form else '' }}">
-                                </div>
-                            </div>
+      .card-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
 
-                            <!-- Password Field -->
-                            <div class="mb-4">
-                                <label for="password" class="form-label text-muted">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="bi bi-lock text-muted"></i>
-                                    </span>
-                                    <input 
-                                        type="password" 
-                                        class="form-control border-start-0 ps-0" 
-                                        id="password" 
-                                        name="password" 
-                                        placeholder="Create a strong password"
-                                        required>
-                                    <button class="btn btn-light border border-start-0" type="button" id="togglePassword">
-                                        <i class="bi bi-eye text-muted"></i>
-                                    </button>
-                                </div>
-                                <div class="password-strength mt-2 small text-muted">
-                                    <i class="bi bi-shield-check me-1"></i>
-                                    Password must be at least 8 characters
-                                </div>
-                            </div>
+      /* Form Elements */
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
 
-                            <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
-                                <i class="bi bi-person-plus me-2"></i>Create Account
-                            </button>
-                        </form>
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+      }
 
-                        <div class="text-center">
-                            <p class="text-muted mb-0">Already have an account?</p>
-                            <a href="{{ url_for('login') }}" class="text-primary text-decoration-none">Sign in here</a>
-                        </div>
-                    </div>
-                </div>
+      .input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
 
-                <!-- Security Notice -->
-                <div class="text-center mt-4">
-                    <p class="text-muted small mb-0">
-                        <i class="bi bi-shield-lock me-1"></i>
-                        Your data is protected with end-to-end encryption
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+      .input-icon {
+        position: absolute;
+        left: 1rem;
+        color: var(--text);
+      }
 
-<style>
+      .form-input {
+        width: 100%;
+        padding: 0.8rem 1rem 0.8rem 2.5rem;
+        border: 3px solid var(--shadow-color);
+        background: var(--input-bg);
+        font-size: 1rem;
+        transition: transform 0.2s;
+      }
 
+      .form-input:focus {
+        outline: none;
+        transform: translate(-4px, -4px);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+      }
 
-    @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1.5rem;
+        border: 3px solid var(--shadow-color);
+        background: var(--button-bg);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
 
-body {
-    font-family: "Arvo", serif;
-    font-weight: 400;
-}
+      .btn:hover {
+        transform: translate(-4px, -4px);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+      }
 
-.register-page {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
-}
+      .btn-full {
+        width: 100%;
+      }
 
-.brand-icon {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-}
+      .alert {
+        background: #ffd7d7;
+        border: 3px solid var(--shadow-color);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-.card {
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-}
+      .footer-text {
+        text-align: center;
+        margin-top: 2rem;
+      }
 
-.form-control, .input-group-text {
-    border-radius: 8px;
-    padding: 0.6rem 1rem;
-}
+      .password-strength {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-.input-group .form-control {
-    border-radius: 0 8px 8px 0;
-}
+      .security-notice {
+        text-align: center;
+        margin-top: 2rem;
+      }
 
-.input-group .input-group-text {
-    border-radius: 8px 0 0 8px;
-}
+      .security-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1.5rem;
+        background: var(--secondary);
+        border: 3px solid var(--shadow-color);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+        color: var(--text);
+      }
 
-.input-group .btn {
-    border-radius: 0 8px 8px 0;
-}
-
-.btn-primary {
-    border-radius: 8px;
-}
-
-/* Hover effects */
-.form-control:focus {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-}
-
-.btn-primary:hover {
-    transform: translateY(-1px);
-    transition: transform 0.2s ease;
-}
-
-/* Password strength indicator */
-.password-strength {
-    font-size: 0.85rem;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const togglePassword = document.querySelector('#togglePassword');
-    const password = document.querySelector('#password');
-    
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        
-        // Toggle icon
-        const icon = this.querySelector('i');
-        icon.classList.toggle('bi-eye');
-        icon.classList.toggle('bi-eye-slash');
-    });
-
-    // Optional: Basic password strength indicator
-    password.addEventListener('input', function() {
-        const strengthText = document.querySelector('.password-strength');
-        if (this.value.length >= 8) {
-            strengthText.innerHTML = '<i class="bi bi-shield-fill-check text-success me-1"></i>Password strength: Good';
-        } else {
-            strengthText.innerHTML = '<i class="bi bi-shield-check me-1"></i>Password must be at least 8 characters';
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
         }
-    });
-});
-</script>
-{% endblock %}
+
+        .nav-links.active {
+          display: flex;
+          flex-direction: column;
+          position: absolute;
+          top: 80px;
+          left: 0;
+          right: 0;
+          background: var(--nav-bg);
+          padding: 1rem;
+          border-bottom: 3px solid var(--shadow-color);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/" class="brand">
+          <div class="brand-icon">
+            <i class="bi bi-shield-lock"></i>
+          </div>
+          SecureVault
+        </a>
+        <div class="nav-links">
+          <a href="/" class="btn" style="background: var(--secondary)">Home</a>
+          <a href="/login" class="btn">Sign In</a>
+          <a href="/register" class="btn" style="background: var(--secondary)"
+            >Register</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <main class="register-container">
+      <div class="register-card">
+        <div class="card-header">
+          <div
+            class="brand-icon"
+            style="display: inline-block; margin-bottom: 1rem"
+          >
+            <i class="bi bi-shield-lock"></i>
+          </div>
+          <h1>Create Account</h1>
+        </div>
+
+        {% if alert_message %}
+        <div class="alert">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          {{ alert_message }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('register') }}" method="POST">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-group">
+              <i class="bi bi-envelope input-icon"></i>
+              <input
+                type="email"
+                class="form-input"
+                name="email"
+                placeholder="name@example.com"
+                required
+                value="{{ request.form.email if request.form else '' }}"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <div class="input-group">
+              <i class="bi bi-person input-icon"></i>
+              <input
+                type="text"
+                class="form-input"
+                name="username"
+                placeholder="Choose a username"
+                required
+                value="{{ request.form.username if request.form else '' }}"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <i class="bi bi-lock input-icon"></i>
+              <input
+                type="password"
+                class="form-input"
+                name="password"
+                id="password"
+                placeholder="Create a strong password"
+                required
+              />
+            </div>
+            <div class="password-strength">
+              <i class="bi bi-shield-check"></i>
+              Password must be at least 8 characters
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-full">
+            <i class="bi bi-person-plus"></i>
+            Create Account
+          </button>
+        </form>
+
+        <div class="footer-text">
+          <p>Already have an account?</p>
+          <a
+            href="{{ url_for('login') }}"
+            class="btn"
+            style="background: var(--secondary); margin-top: 1rem"
+          >
+            Sign in here
+          </a>
+        </div>
+
+        <div class="security-notice">
+          <div class="security-badge">
+            <i class="bi bi-shield-lock"></i>
+            Your data is protected with end-to-end encryption
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const password = document.querySelector("#password");
+
+        password.addEventListener("input", function () {
+          const strengthText = document.querySelector(".password-strength");
+          if (this.value.length >= 8) {
+            strengthText.innerHTML =
+              '<i class="bi bi-shield-fill-check" style="color: var(--secondary);"></i> Password strength: Good';
+          } else {
+            strengthText.innerHTML =
+              '<i class="bi bi-shield-check"></i> Password must be at least 8 characters';
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
