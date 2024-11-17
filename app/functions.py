@@ -1,9 +1,10 @@
-import os
-import scrypt
+import scrypt, os, shutil
 from pymongo import MongoClient
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from flask import session
+from werkzeug.utils import secure_filename
+from flask import current_app as app
 
 def get_db():
     # Get the MongoDB URI from the environment variable
@@ -37,7 +38,6 @@ def encrypt_file(filepath, password):
 
     return ciphertext_data
 
-
 def decrypt_file(filepath, password):
     with open(filepath, 'rb') as f:
         # Read the IV and salt from the file
@@ -52,3 +52,34 @@ def decrypt_file(filepath, password):
     # Decrypt and unpad the data
     decrypted_data = unpad(cipher.decrypt(ciphertext_data), AES.block_size)
     return decrypted_data
+
+def get_file_path(filename):
+    
+    safe_filename = secure_filename(filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], safe_filename)
+    return filepath
+
+def get_file_size(filename):
+    def format_size(size):
+        # List of size units
+        units = ['B', 'KB', 'MB', 'GB', 'TB']
+        
+        # If the size is 0, return '0 B'
+        if size == 0:
+            return '0 B'
+        
+        # Calculate the appropriate unit
+        unit_index = 0
+        while size >= 1024 and unit_index < len(units) - 1:
+            size /= 1024.0
+            unit_index += 1
+        
+        # Format the size with one decimal place
+        return f"{size:.1f} {units[unit_index]}"
+
+    filepath = get_file_path(filename)
+    try:
+        file_size = os.path.getsize(filepath)
+        return format_size(file_size)
+    except FileNotFoundError:
+        return None

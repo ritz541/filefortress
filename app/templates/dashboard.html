@@ -337,6 +337,9 @@ body {
                             <th>
                                 <i class="fas fa-calendar-alt me-2"></i>Upload Date
                             </th>
+                            <th>
+                                <i class="fas fa-file me-2"></i>File Size
+                            </th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -350,6 +353,7 @@ body {
                                 {{ file.file_name }}
                             </td>
                             <td>{{ file.upload_date }}</td>
+                            <td>{{ file.file_size }}</td>
                             <td class="text-center">
                                 <div class="btn-group">
                                     <a href="{{ url_for('download', file_name=file.file_name) }}" 
@@ -387,6 +391,7 @@ body {
                                 {{ file.file_name }}
                             </td>
                             <td>{{ file.upload_date }}</td>
+                            <td>{{ file.file_size }}</td>
                             <td class="text-center">
                                 <div class="btn-group">
                                     <a href="{{ url_for('download', file_name=file.file_name) }}" 

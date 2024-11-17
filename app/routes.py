@@ -3,7 +3,7 @@ from app import app
 import config
 import scrypt, os, hmac, random
 from werkzeug.utils import secure_filename
-from app.functions import get_db, encrypt_file, decrypt_file
+from app.functions import get_db, encrypt_file, decrypt_file, get_file_path, get_file_size
 from bson.objectid import ObjectId
 from datetime import datetime
 
@@ -140,7 +140,7 @@ def upload():
             try:
                 # Secure the filename and save the file
                 filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                filepath = get_file_path(filename)
                 file.save(filepath)
 
                 # Encrypt the file
@@ -148,17 +148,21 @@ def upload():
                 with open(filepath, 'wb') as f:
                     f.write(encrypted_data)
 
+                file_size = get_file_size(filename)
+                
                 # Save file metadata in the database
                 upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 encrypted_files_collection.insert_one({
                     'file_name': filename,
                     'user_id': user_id,
-                    'upload_date': upload_date
+                    'upload_date': upload_date,
+                    'file_size': file_size
                 })
                 all_files_collection.insert_one({
                     'file_name': filename,
                     'user_id': user_id,
-                    'upload_date': upload_date
+                    'upload_date': upload_date,
+                    'file_size': file_size
                 })
 
                 alert_message = 'File uploaded and encrypted successfully!'
@@ -199,7 +203,7 @@ def decrypt():
             return render_template('decrypt.html', alert_message=alert_message)
 
         if file and password:
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
+            filepath = get_file_path(file.filename)
             file.save(filepath)
 
             try:
@@ -208,21 +212,25 @@ def decrypt():
 
                 # Save the decrypted file
                 decrypted_filename = 'decrypted_' + file.filename
-                decrypted_filepath = os.path.join(app.config['UPLOAD_FOLDER'], decrypted_filename)
+                decrypted_filepath = get_file_path(decrypted_filename)
                 with open(decrypted_filepath, 'wb') as f:
                     f.write(decrypted_data)
 
+                file_size = get_file_size(decrypted_filename)
+                
                 # Record the decryption in the database
                 upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 decrypted_files_collection.insert_one({
                     "file_name": decrypted_filename,
                     "user_id": user_id,
-                    'upload_date': upload_date
+                    'upload_date': upload_date,
+                    'file_size': file_size
                 })
                 all_files_collection.insert_one({
                     "file_name": decrypted_filename,
                     "user_id": user_id,
-                    'upload_date': upload_date
+                    'upload_date': upload_date,
+                    'file_size': file_size
                 })
 
                 alert_message = 'File decrypted successfully!'
