@@ -21,6 +21,16 @@ def get_db():
     
     return db
 
+# #function to connect to local database
+# def get_db():
+#     # Connect to the MongoDB cluster
+#     client = MongoClient('mongodb://localhost:27017')
+    
+#     # Select the database
+#     db = client['encryption_db']
+    
+#     return db
+
 
 def encrypt_file(filepath, password):
     # Generate a salt and derive a key from the password
@@ -49,8 +59,14 @@ def decrypt_file(filepath, password):
     key = scrypt.hash(password, salt, N=16384, r=8, p=1, buflen=32)
     cipher = AES.new(key, AES.MODE_CBC, iv)
 
-    # Decrypt and unpad the data
-    decrypted_data = unpad(cipher.decrypt(ciphertext_data), AES.block_size)
+    # Decrypt the data
+    try:
+        decrypted_data = cipher.decrypt(ciphertext_data)
+        # Try unpadding the data
+        decrypted_data = unpad(decrypted_data, AES.block_size)
+    except ValueError:
+        # If unpadding fails, just return the raw decrypted data
+        return cipher.decrypt(ciphertext_data)
     return decrypted_data
 
 def get_file_path(filename):

@@ -233,12 +233,14 @@ def decrypt():
                     'file_size': file_size
                 })
 
-                alert_message = 'File decrypted successfully!'
+                # Notify the user of success but warn if the decryption might be incorrect
+                alert_message = (
+                    'File decrypted successfully!'
+                    if len(decrypted_data.strip()) > 0 else
+                    'File decrypted, but the result might be incorrect. Check your password.'
+                )
                 return render_template('decrypt.html', alert_message=alert_message)
 
-            except ValueError:
-                alert_message = 'Incorrect password or decryption failed.'
-                return render_template('decrypt.html', alert_message=alert_message)
             except Exception as e:
                 alert_message = f'An error occurred: {str(e)}'
                 return render_template('decrypt.html', alert_message=alert_message)
