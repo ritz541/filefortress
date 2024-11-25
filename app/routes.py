@@ -1,4 +1,4 @@
-from flask import render_template, redirect, request, flash, url_for, send_file, session
+from flask import render_template, redirect, request, flash, url_for, send_file, session, jsonify
 from app import app
 import config
 import scrypt, os, hmac, random
@@ -6,13 +6,16 @@ from werkzeug.utils import secure_filename
 from app.functions import get_db, encrypt_file, decrypt_file, get_file_path, get_file_size
 from bson.objectid import ObjectId
 from datetime import datetime
+import qrcode
+import io
+import base64
 
 
 db = get_db()
 all_files_collection = db['all_files']
 users_collection = db['users']
 encrypted_files_collection = db['encrypted_files']
-decrypted_files_collection = db['decrytped_files']
+decrypted_files_collection = db['decrypted_files']
 group_chat_collection = db['group_chat']
 
 @app.route('/')
@@ -358,3 +361,95 @@ def profile():
                 flash('Current password is incorrect', 'error')
     
     return render_template('profile.html', user=user, days_since_creation=days_since_creation)
+
+@app.route('/generate-qr/<file_id>')
+def generate_qr(file_id):
+    if 'username' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    try:
+        # Get user ID
+        user = users_collection.find_one({'username': session['username']})
+        user_id = user['_id']
+
+        # Convert string ID to ObjectId
+        file_obj_id = ObjectId(file_id)
+        
+        # First check encrypted files
+        file_data = encrypted_files_collection.find_one({
+            '_id': file_obj_id,
+            'user_id': user_id
+        })
+        
+        # If not found in encrypted files, check decrypted files
+        if not file_data:
+            file_data = decrypted_files_collection.find_one({
+                '_id': file_obj_id,
+                'user_id': user_id
+            })
+        
+        if not file_data:
+            return jsonify({'error': 'File not found or access denied'}), 404
+            
+        # Create share URL
+        share_url = request.host_url.rstrip('/') + url_for('download_shared', file_id=str(file_obj_id))
+        
+        # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(share_url)
+        qr.make(fit=True)
+
+        # Create QR code image
+        img_buffer = io.BytesIO()
+        qr.make_image(fill_color="black", back_color="white").save(img_buffer)
+        img_str = base64.b64encode(img_buffer.getvalue()).decode()
+        
+        return jsonify({
+            'qr_code': img_str,
+            'share_url': share_url,
+            'filename': file_data.get('filename', file_data.get('file_name', ''))
+        })
+    except Exception as e:
+        print(f"Error in generate_qr: {str(e)}")  # Add debugging
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/shared/<file_id>')
+def download_shared(file_id):
+    try:
+        # Convert string ID to ObjectId
+        file_obj_id = ObjectId(file_id)
+        
+        # First check encrypted files
+        file_data = encrypted_files_collection.find_one({'_id': file_obj_id})
+        
+        # If not found in encrypted files, check decrypted files
+        if not file_data:
+            file_data = decrypted_files_collection.find_one({'_id': file_obj_id})
+            
+        if not file_data:
+            flash('File not found', 'error')
+            return redirect(url_for('home'))
+
+        # Get file path
+        filename = file_data.get('filename', file_data.get('file_name', ''))
+        if not filename:
+            flash('Invalid file data', 'error')
+            return redirect(url_for('home'))
+            
+        file_path = get_file_path(filename)
+        
+        # Send file
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        print(f"Error in download_shared: {str(e)}")  # Add debugging
+        flash(f'Error downloading file: {str(e)}', 'error')
+        return redirect(url_for('home'))
