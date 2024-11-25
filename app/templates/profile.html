@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Primary Colors */
+    :root {
+        --primary-color: #9b4d96;
+        --secondary-color: #9b4d96;
+        --accent-color: #9b4d96;
+        --bg-primary: #ffffff;
+        --bg-secondary: #f0f0f0;
+        --text-primary: #2c363f;
+        --text-secondary: #666666;
+        --border-color: #000000;
+        --shadow-color: rgba(0, 0, 0, 0.85);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+    }
+
+    .profile-container {
+        background: var(--bg-primary);
+        border: 3px solid var(--border-color);
+        border-radius: 8px;
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 1200px;
+        position: relative;
+        transform: translate(-4px, -4px);
+        transition: transform 0.2s ease;
+        box-shadow: 8px 8px 0 var(--shadow-color);
+        margin: 2rem auto;
+    }
+
+    .profile-container:hover {
+        transform: translate(-6px, -6px);
+        box-shadow: 10px 10px 0 var(--shadow-color);
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding: 2rem;
+        background: var(--bg-secondary);
+        border: 3px solid var(--border-color);
+        border-radius: 8px;
+    }
+
+    .header h2 {
+        font-size: 2.5rem;
+        margin: 1rem 0;
+        font-weight: 800;
+        color: var(--primary-color);
+    }
+
+    .header i {
+        font-size: 3rem;
+        color: var(--primary-color);
+    }
+
+    .days-badge {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: var(--accent-color);
+        color: white;
+        border: 3px solid var(--border-color);
+        border-radius: 4px;
+        font-weight: bold;
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+        margin-top: 1rem;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .profile-card {
+        background: var(--bg-primary);
+        border: 3px solid var(--border-color);
+        border-radius: 8px;
+        padding: 2rem;
+        transition: transform 0.2s ease;
+    }
+
+    .profile-card:hover {
+        transform: translate(-4px, -4px);
+        box-shadow: 8px 8px 0 var(--shadow-color);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid var(--border-color);
+    }
+
+    .card-header i {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-right: 1rem;
+    }
+
+    .card-header h3 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--text-primary);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 1rem;
+        border: 3px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        background: var(--bg-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+    }
+
+    .form-input:disabled {
+        background: var(--bg-secondary);
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 1rem;
+        border: 3px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        background: var(--primary-color);
+        color: white;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--shadow-color);
+    }
+
+    .btn i {
+        font-size: 1.2rem;
+    }
+</style>
+
+<div class="profile-container">
+    <!-- Header Section -->
+    <div class="header">
+        <i class="bi bi-person-circle"></i>
+        <h2>Profile Settings</h2>
+        <div class="days-badge">
+            <i class="bi bi-calendar-check"></i>
+            Member for {{ days_since_creation }} days
+        </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="profile-grid">
+        <!-- Change Username Section -->
+        <div class="profile-card">
+            <div class="card-header">
+                <i class="bi bi-person-badge"></i>
+                <h3>Change Username</h3>
+            </div>
+            <form method="POST">
+                <input type="hidden" name="action" value="change_username">
+                <div class="form-group">
+                    <label>Current Username</label>
+                    <input type="text" value="{{ user.username }}" disabled
+                        class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>New Username</label>
+                    <input type="text" name="new_username" required
+                        class="form-input"
+                        placeholder="Enter new username">
+                </div>
+                <button type="submit" class="btn">
+                    <i class="bi bi-check-circle"></i>
+                    Update Username
+                </button>
+            </form>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="profile-card">
+            <div class="card-header">
+                <i class="bi bi-shield-lock"></i>
+                <h3>Change Password</h3>
+            </div>
+            <form method="POST">
+                <input type="hidden" name="action" value="change_password">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" name="current_password" required
+                        class="form-input"
+                        placeholder="Enter current password">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" required
+                        class="form-input"
+                        placeholder="Enter new password">
+                </div>
+                <button type="submit" class="btn">
+                    <i class="bi bi-key"></i>
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

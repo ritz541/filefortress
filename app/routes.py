@@ -46,7 +46,8 @@ def register():
                 "email": email,
                 "username": username,
                 "password": hashed_password,
-                "salt": salt
+                "salt": salt,
+                "created_at": datetime.utcnow()
             })
 
             alert_message = "Registration successful. You can now log in."
@@ -311,3 +312,49 @@ def group_chat():
     messages.reverse()
     
     return render_template('group_chat.html', messages=messages)
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    user = users_collection.find_one({"username": session['username']})
+    if not user:
+        return redirect(url_for('logout'))
+    
+    # Calculate days since account creation
+    created_at = user.get('created_at', datetime.utcnow())  # fallback to now if not set
+    days_since_creation = (datetime.utcnow() - created_at).days
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'change_username':
+            new_username = request.form.get('new_username')
+            if new_username and new_username != user['username']:
+                users_collection.update_one(
+                    {"_id": user['_id']},
+                    {"$set": {"username": new_username}}
+                )
+                session['username'] = new_username
+                flash('Username updated successfully!', 'success')
+                return redirect(url_for('profile'))
+                
+        elif action == 'change_password':
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            
+            # Verify current password
+            entered_hash = scrypt.hash(current_password, user['salt'])
+            if hmac.compare_digest(entered_hash, user['password']):
+                # Generate new salt and hash for new password
+                new_salt = os.urandom(16)
+                new_hash = scrypt.hash(new_password, new_salt)
+                users_collection.update_one(
+                    {"_id": user['_id']},
+                    {"$set": {"password": new_hash, "salt": new_salt}}
+                )
+                flash('Password updated successfully!', 'success')
+            else:
+                flash('Current password is incorrect', 'error')
+    
+    return render_template('profile.html', user=user, days_since_creation=days_since_creation)
