@@ -4,18 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SecureVault - Neubrutalism</title>
+    
+    <!-- External CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css" />
 
     <style>
-      /* Custom Properties for Easy Theme Customization */
+      /* Theme Variables */
       :root {
-        --primary: #9b4d96; /* Purple */
-        --secondary: #b6b6b6; /* Light Grey */
-        --accent: #e8c9f1; /* Lavender */
+        --primary: #9b4d96;    /* Purple */
+        --secondary: #b6b6b6;  /* Light Grey */
+        --accent: #e8c9f1;     /* Lavender */
         --background: #ffeeee;
         --text: #000000;
         --success: #00cc66;
@@ -24,13 +23,15 @@
         --shadow-offset: 4px;
       }
 
-      /* Neubrutalism Base Styles */
+      /* Base Styles */
       body {
         font-family: "Space Grotesk", system-ui, sans-serif;
         background-color: var(--background);
         color: var(--text);
+        min-height: 100vh;
       }
 
+      /* Neubrutalism Components */
       .neu-border {
         border: 3px solid var(--text);
         box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--text);
@@ -44,8 +45,7 @@
 
       .neu-btn:hover {
         transform: translate(-2px, -2px);
-        box-shadow: calc(var(--shadow-offset) + 2px)
-          calc(var(--shadow-offset) + 2px) 0 var(--text);
+        box-shadow: calc(var(--shadow-offset) + 2px) calc(var(--shadow-offset) + 2px) 0 var(--text);
       }
 
       .neu-btn:active {
@@ -53,6 +53,7 @@
         box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--text);
       }
 
+      /* Navigation Styles */
       .nav-link {
         position: relative;
         transition: transform 0.1s ease-in-out;
@@ -67,7 +68,7 @@
         box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--text);
       }
 
-      /* Stats Card Styles */
+      /* Stats Card */
       .stats-card {
         background-color: var(--primary);
         border: 3px solid var(--text);
@@ -99,133 +100,104 @@
       }
     </style>
   </head>
-  <body class="min-h-screen">
-    <!-- Navbar -->
+
+  <body>
+    <!-- Navigation Bar -->
     <nav class="sticky top-0 bg-white neu-border mb-8">
       <div class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <!-- Logo -->
-          <a
-            href="{{ url_for('home') }}"
-            class="flex items-center space-x-2 neu-btn px-4 py-2 bg-[var(--primary)]"
-          >
+          <a href="{{ url_for('home') }}" class="flex items-center space-x-2 neu-btn px-4 py-2 bg-[var(--primary)]">
             <i class="bi bi-shield-lock text-2xl"></i>
             <span class="font-bold text-xl">SecureVault</span>
           </a>
 
-          <!-- Navigation -->
+          <!-- Navigation Links -->
           <div class="hidden lg:flex items-center space-x-6">
-            <a
-              href="{{ url_for('home') }}"
-              class="neu-btn px-4 py-2 bg-[var(--background)]"
-            >
+            <!-- Home Link -->
+            <a href="{{ url_for('home') }}" class="neu-btn px-4 py-2 bg-[var(--background)]">
               <i class="bi bi-house me-2"></i> Home
             </a>
 
             {% if 'username' in session %}
-            <a
-              href="{{ url_for('upload') }}"
-              class="neu-btn px-4 py-2 bg-[var(--secondary)]"
-            >
-              <i class="bi bi-cloud-upload me-2"></i> Upload
-            </a>
-            <a
-              href="{{ url_for('decrypt') }}"
-              class="neu-btn px-4 py-2 bg-[var(--accent)]"
-            >
-              <i class="bi bi-unlock me-2"></i> Decrypt
-            </a>
+              <!-- Authenticated User Links -->
+              <a href="{{ url_for('upload') }}" class="neu-btn px-4 py-2 bg-[var(--secondary)]">
+                <i class="bi bi-cloud-upload me-2"></i> Upload
+              </a>
+              <a href="{{ url_for('decrypt') }}" class="neu-btn px-4 py-2 bg-[var(--accent)]">
+                <i class="bi bi-unlock me-2"></i> Decrypt
+              </a>
 
-            <!-- User Menu -->
-            <div class="relative">
-              <button
-                class="neu-btn px-4 py-2 bg-[var(--primary)] flex items-center space-x-2"
-                id="user-menu-btn"
-              >
-                <i class="bi bi-person-fill"></i>
-                <span>{{ session['username'] }}</span>
-              </button>
+              <!-- User Menu Dropdown -->
+              <div class="relative">
+                <button class="neu-btn px-4 py-2 bg-[var(--primary)] flex items-center space-x-2" id="user-menu-btn">
+                  <i class="bi bi-person-fill"></i>
+                  <span>{{ session['username'] }}</span>
+                </button>
 
-              <div
-                id="user-menu-dropdown"
-                class="absolute right-0 mt-2 w-48 bg-white neu-border hidden"
-              >
-                <div class="py-2 px-4">
-                  <small class="text-gray-500">Signed in as</small>
-                  <p class="font-bold">{{ session['username'] }}</p>
+                <div id="user-menu-dropdown" class="absolute right-0 mt-2 w-48 bg-white neu-border hidden">
+                  <!-- User Info -->
+                  <div class="py-2 px-4">
+                    <small class="text-gray-500">Signed in as</small>
+                    <p class="font-bold">{{ session['username'] }}</p>
+                  </div>
+                  
+                  <hr class="border-t-2 border-black" />
+                  
+                  <!-- Menu Items -->
+                  <a href="{{ url_for('profile') }}" class="block px-4 py-2 hover:bg-[var(--accent)] hover:text-white">
+                    <i class="bi bi-person-fill"></i> Profile Settings
+                  </a>
+                  <a href="{{ url_for('group_chat') }}" class="block px-4 py-2 hover:bg-[var(--accent)] hover:text-white">
+                    <i class="bi bi-chat me-2"></i> Group Chat
+                  </a>
+                  
+                  <hr class="border-t-2 border-black" />
+                  
+                  <!-- Logout -->
+                  <a href="{{ url_for('logout') }}" class="block px-4 py-2 hover:bg-[var(--danger)] hover:text-white">
+                    <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                  </a>
                 </div>
-                <hr class="border-t-2 border-black" />
-                <a
-                  href="{{ url_for('group_chat') }}"
-                  class="block px-4 py-2 hover:bg-[var(--accent)] hover:text-white"
-                >
-                  <i class="bi bi-chat me-2"></i> Group Chat
-                </a>
-                <hr class="border-t-2 border-black" />
-                <a
-                  href="{{ url_for('logout') }}"
-                  class="block px-4 py-2 hover:bg-[var(--danger)] hover:text-white"
-                >
-                  <i class="bi bi-box-arrow-right me-2"></i> Sign Out
-                </a>
               </div>
-            </div>
-
             {% else %}
-            <a
-              href="{{ url_for('login') }}"
-              class="neu-btn px-4 py-2 bg-[var(--accent)]"
-              >Sign In</a
-            >
-            <a
-              href="{{ url_for('register') }}"
-              class="neu-btn px-4 py-2 bg-[var(--primary)]"
-              >Register</a
-            >
+              <!-- Guest Links -->
+              <a href="{{ url_for('login') }}" class="neu-btn px-4 py-2 bg-[var(--accent)]">Sign In</a>
+              <a href="{{ url_for('register') }}" class="neu-btn px-4 py-2 bg-[var(--primary)]">Register</a>
             {% endif %}
           </div>
         </div>
       </div>
     </nav>
 
-    <!-- Content Container -->
-    <div class="container mx-auto px-4">{% block content %}{% endblock %}</div>
+    <!-- Main Content -->
+    <div class="container mx-auto px-4">
+      {% block content %}{% endblock %}
+    </div>
 
+    <!-- JavaScript -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Get the button and the dropdown menu elements
+        // User Menu Toggle
         const userMenuButton = document.getElementById("user-menu-btn");
         const userMenuDropdown = document.getElementById("user-menu-dropdown");
 
-        // Add click event listener to the button
-        userMenuButton.addEventListener("click", function (event) {
-          // Toggle the visibility of the dropdown
-          userMenuDropdown.classList.toggle("hidden");
+        if (userMenuButton && userMenuDropdown) {
+          userMenuButton.addEventListener("click", function (event) {
+            userMenuDropdown.classList.toggle("hidden");
+            event.stopPropagation();
+          });
 
-          // Optional: Close the dropdown if clicked outside
-          document.addEventListener("click", function (e) {
-            if (
-              !userMenuButton.contains(e.target) &&
-              !userMenuDropdown.contains(e.target)
-            ) {
+          // Close dropdown when clicking outside
+          document.addEventListener("click", function (event) {
+            if (!userMenuDropdown.contains(event.target) && !userMenuButton.contains(event.target)) {
               userMenuDropdown.classList.add("hidden");
             }
           });
-        });
-      });
-
-      // Add active state to current nav item
-      document.addEventListener("DOMContentLoaded", function () {
-        const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll("a");
-
-        navLinks.forEach((link) => {
-          if (link.getAttribute("href") === currentPath) {
-            link.classList.add("bg-[var(--accent)]", "text-white");
-          }
-        });
+        }
       });
     </script>
+
     <div class="container mx-auto px-4 py-8">
       <!-- Dashboard Header -->
       <div class="neu-border bg-[var(--primary)] p-8 mb-8 text-center">
@@ -450,6 +422,5 @@
         transform: rotate(-2deg);
       }
     </style>
-    <div></div>
   </body>
 </html>
