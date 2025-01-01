@@ -10,27 +10,17 @@ def get_db():
     # Get the MongoDB URI from the environment variable
     mongo_uri = os.getenv('MONGO_URI')
     
-    if not mongo_uri:
-        raise ValueError("MongoDB URI not set in environment variables")
-    
-    # Connect to the MongoDB cluster
-    client = MongoClient(mongo_uri)
-    
+    if mongo_uri:
+        # Connect to the MongoDB cluster
+        client = MongoClient(mongo_uri)
+        
+    else:
+        client = MongoClient('mongodb://localhost:27017')
+
     # Select the database
     db = client['encryption_db']
     
     return db
-
-# #function to connect to local database
-# def get_db():
-#     # Connect to the MongoDB cluster
-#     client = MongoClient('mongodb://localhost:27017')
-    
-#     # Select the database
-#     db = client['encryption_db']
-    
-#     return db
-
 
 def encrypt_file(filepath, password):
     # Generate a salt and derive a key from the password

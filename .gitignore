@@ -1,6 +1,8 @@
 .git
 .fort/
+.file/
 .idea/
 *.pyc
 app/__pycache__/functions.cpython-310.pyc
 app/__pycache__/routes.cpython-310.pyc
+app/__pycache__/
