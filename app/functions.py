@@ -89,3 +89,6 @@ def get_file_size(filename):
         return format_size(file_size)
     except FileNotFoundError:
         return None
+    
+def doNothing():
+    print("This is just a function to test.")
